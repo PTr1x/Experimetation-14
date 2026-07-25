@@ -1,3 +1,5 @@
+url: https://raw.githubusercontent.com/PTr1x/Experimetation-14/master/Content.Server/NPC/HTN/HTNSystem.cs
+
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -17,6 +19,7 @@ using Content.Server.Worldgen; // Frontier
 using Content.Server.Worldgen.Components; // Frontier
 using Content.Server.Worldgen.Systems; // Frontier
 using Robust.Server.GameObjects; // Frontier
+using Robust.Shared.Map;
 
 namespace Content.Server.NPC.HTN;
 
@@ -24,6 +27,7 @@ public sealed class HTNSystem : EntitySystem
 {
     [Dependency] private readonly IAdminManager _admin = default!;
     [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
+    [Dependency] private readonly SharedTransformSystem _transform = default!;
     [Dependency] private readonly NPCSystem _npc = default!;
     [Dependency] private readonly NPCUtilitySystem _utility = default!;
     // Frontier
@@ -46,7 +50,8 @@ public sealed class HTNSystem : EntitySystem
         SubscribeLocalEvent<HTNComponent, MobStateChangedEvent>(_npc.OnMobStateChange);
         SubscribeLocalEvent<HTNComponent, MapInitEvent>(_npc.OnNPCMapInit);
         SubscribeLocalEvent<HTNComponent, PlayerAttachedEvent>(_npc.OnPlayerNPCAttach);
-        SubscribeLocalEvent<HTNComponent, PlayerDetachedEvent>(_npc.OnPlayerNPCDetach);
+        SubscribeLocalEvent<HTN
+Component, PlayerDetachedEvent>(_npc.OnPlayerNPCDetach);
         SubscribeLocalEvent<HTNComponent, ComponentShutdown>(OnHTNShutdown);
         SubscribeNetworkEvent<RequestHTNMessage>(OnHTNMessage);
         SubscribeLocalEvent<PrototypesReloadedEventArgs>(OnPrototypeLoad);
@@ -108,7 +113,8 @@ public sealed class HTNSystem : EntitySystem
 
             foreach (var precon in branch.Preconditions)
             {
-                precon.Initialize(EntityManager.EntitySysManager);
+                precon.Initialize(EntityMana
+ger.EntitySysManager);
             }
 
             foreach (var task in branch.Tasks)
@@ -168,7 +174,8 @@ public sealed class HTNSystem : EntitySystem
         {
             var currentOperator = ent.Comp.Plan.CurrentOperator;
 
-            ShutdownTask(currentOperator, ent.Comp.Blackboard, HTNOperatorStatus.Failed);
+            ShutdownTask(currentOperator, ent.Comp.Blackboard, HTNOp
+eratorStatus.Failed);
             ShutdownPlan(ent.Comp);
 
             ent.Comp.Plan = null;
@@ -229,7 +236,8 @@ public sealed class HTNSystem : EntitySystem
                 }
 
                 // If a new planning job has finished then handle it.
-                if (comp.PlanningJob.Status != JobStatus.Finished)
+                if (comp.
+PlanningJob.Status != JobStatus.Finished)
                     continue;
 
                 var newPlanBetter = false;
@@ -278,7 +286,8 @@ public sealed class HTNSystem : EntitySystem
                             text.AppendLine($"BTR: {string.Join(", ", comp.Plan.BranchTraversalRecord)}");
                             text.AppendLine($"tasks:");
                             var root = comp.RootTask;
-                            var btr = new List<int>();
+                            var btr = new List<int>
+();
                             var level = -1;
                             AppendDebugText(root, text, comp.Plan.BranchTraversalRecord, btr, ref level);
                         }
@@ -340,7 +349,8 @@ public sealed class HTNSystem : EntitySystem
             return;
         }
 
-        if (task is HTNCompoundTask compTask)
+        if (task is HTNCompo
+undTask compTask)
         {
             var compound = _prototypeManager.Index<HTNCompoundPrototype>(compTask.Task);
             level++;
@@ -370,6 +380,19 @@ public sealed class HTNSystem : EntitySystem
 
     private void Update(HTNComponent component, float frameTime)
     {
+        // Check if NPC has changed grid and trigger replan if so
+        var owner = component.Blackboard.GetValue<EntityUid>(NPCBlackboard.Owner);
+        if (EntityManager.TryGetComponent<TransformComponent>(owner, out var xform))
+        {
+            var currentGrid = _transform.GetGrid(xform.Coordinates);
+            if (component.LastGrid != currentGrid)
+            {
+                component.LastGrid = currentGrid;
+                // Trigger replanning when grid changes to adapt to new environment
+                RequestPlan(component);
+            }
+        }
+    
         // If we're not planning then countdown to next one.
         if (component.PlanningJob == null)
             component.PlanAccumulator -= frameTime;
@@ -400,7 +423,8 @@ public sealed class HTNSystem : EntitySystem
             {
                 foreach (var service in currentTask.Services)
                 {
-                    var serviceResult = _utility.GetEntities(blackboard, service.Prototype);
+          
+          var serviceResult = _utility.GetEntities(blackboard, service.Prototype);
                     blackboard.SetValue(service.Key, serviceResult.GetHighest());
                 }
 
@@ -451,7 +475,8 @@ public sealed class HTNSystem : EntitySystem
 
     public void ShutdownPlan(HTNComponent component)
     {
-        DebugTools.Assert(component.Plan != null);
+        DebugTools.Assert(component.Plan != 
+null);
         var blackboard = component.Blackboard;
 
         foreach (var task in component.Plan.Tasks)
@@ -510,7 +535,8 @@ public sealed class HTNSystem : EntitySystem
             return;
 
         component.PlanAccumulator = component.PlanCooldown;
-        var cancelToken = new CancellationTokenSource();
+        v
+ar cancelToken = new CancellationTokenSource();
         var branchTraversal = component.Plan?.BranchTraversalRecord;
 
         var job = new HTNPlanJob(
@@ -578,5 +604,6 @@ public enum HTNOperatorStatus : byte
     /// <summary>
     /// Was a better plan than this found?
     /// </summary>
-    BetterPlan,
+    BetterP
+lan,
 }
