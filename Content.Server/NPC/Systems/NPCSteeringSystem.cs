@@ -1,3 +1,5 @@
+url: https://raw.githubusercontent.com/PTr1x/Experimetation-14/master/Content.Server/NPC/Systems/NPCSteeringSystem.cs
+
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,7 +50,8 @@ public sealed partial class NPCSteeringSystem : SharedNPCSteeringSystem
      * There's multiple ways to implement this, e.g. you can average all directions, or you can choose the highest direction
      * , or you can remove the danger map entirely and only having an interest map (AKA game endeavour).
      * See http://www.gameaipro.com/GameAIPro2/GameAIPro2_Chapter18_Context_Steering_Behavior-Driven_Steering_at_the_Macro_Scale.pdf
-     * (though in their case it was for an F1 game so used context steering across the width of the road).
+     * (though in t
+heir case it was for an F1 game so used context steering across the width of the road).
      */
 
     [Dependency] private readonly IAdminManager _admin = default!;
@@ -80,7 +83,8 @@ public sealed partial class NPCSteeringSystem : SharedNPCSteeringSystem
         new DefaultObjectPool<HashSet<EntityUid>>(new SetPolicy<EntityUid>());
 
     /// <summary>
-    /// Enabled antistuck detection so if an NPC is in the same spot for a while it will re-path.
+    /// Enabled antistuck detection so if an NPC is in the same spot for a while it will 
+re-path.
     /// </summary>
     public bool AntiStuck = true;
 
@@ -144,7 +148,8 @@ public sealed partial class NPCSteeringSystem : SharedNPCSteeringSystem
             foreach (var comp in EntityQuery<NPCSteeringComponent>(true))
             {
                 comp.PathfindToken?.Cancel();
-                comp.PathfindToken = null;
+                co
+mp.PathfindToken = null;
             }
         }
     }
@@ -207,7 +212,8 @@ public sealed partial class NPCSteeringSystem : SharedNPCSteeringSystem
     }
 
     /// <summary>
-    /// Stops the steering behavior for the AI and cleans up.
+    /// Stops the 
+steering behavior for the AI and cleans up.
     /// </summary>
     public void Unregister(EntityUid uid, NPCSteeringComponent? component = null)
     {
@@ -271,7 +277,8 @@ public sealed partial class NPCSteeringSystem : SharedNPCSteeringSystem
             {
                 var (uid, steering, mover, _) = npcs[i];
 
-                data.Add(new NPCSteeringDebugData(
+           
+     data.Add(new NPCSteeringDebugData(
                     GetNetEntity(uid),
                     mover.CurTickSprintMovement,
                     steering.Interest,
@@ -302,6 +309,17 @@ public sealed partial class NPCSteeringSystem : SharedNPCSteeringSystem
         var ev = new SpriteMoveEvent(true);
         RaiseLocalEvent(uid, ref ev);
     }
+
+    /// <summary>
+    /// Checks if the entity can move in weightless (zero-gravity) conditions.
+    /// </summary>
+    private bool CanMoveInWeightless(EntityUid uid)
+    {
+        // Check if entity has a component that allows weightless movement
+        // Space carp would have this, space bear would not
+        return _entManager.HasComponent<WeightlessMovementComponent>(uid);
+    }
+
 
     /// <summary>
     /// Go through each steerer and combine their vectors
@@ -336,7 +354,8 @@ public sealed partial class NPCSteeringSystem : SharedNPCSteeringSystem
             return;
         }
 
-        Interlocked.Increment(ref _activeSteeringCount);
+       
+ Interlocked.Increment(ref _activeSteeringCount);
 
         var agentRadius = steering.Radius;
         var worldPos = _transform.GetWorldPosition(xform);
@@ -348,6 +367,15 @@ public sealed partial class NPCSteeringSystem : SharedNPCSteeringSystem
         var body = _physicsQuery.GetComponent(uid);
         // Wizden#38846
         var weightless = _gravity.IsWeightless(uid);
+
+        // Check if entity can move in weightless conditions
+        if (weightless && !CanMoveInWeightless(uid))
+        {
+            SetDirection(uid, mover, steering, Vector2.Zero);
+            steering.Status = SteeringStatus.NoPath;
+            return;
+        }
+    
         var moveSpeed = GetSprintSpeed(uid, modifier);
         var acceleration = GetAcceleration((uid, modifier), weightless);
         var friction = GetFriction((uid, modifier), weightless);
@@ -377,7 +405,8 @@ public sealed partial class NPCSteeringSystem : SharedNPCSteeringSystem
         // Don't steer too frequently to avoid twitchiness.
         // This should also implicitly solve tie situations.
         // I think doing this after all the ops above is best?
-        // Originally I had it way above but sometimes mobs would overshoot their tile targets.
+        // Originally I had it way above but sometimes mobs would ov
+ershoot their tile targets.
 
         if (!forceSteer)
         {
@@ -435,7 +464,8 @@ public sealed partial class NPCSteeringSystem : SharedNPCSteeringSystem
     private async void RequestPath(EntityUid uid, NPCSteeringComponent steering, TransformComponent xform, float targetDistance)
     {
         // If we already have a pathfinding request then don't grab another.
-        // If we're in range then just beeline them; this can avoid stutter stepping and is an easy way to look nicer.
+        // If we're in range then just beeline them; this can av
+oid stutter stepping and is an easy way to look nicer.
         if (steering.Pathfind || targetDistance < steering.RepathRange)
             return;
 
@@ -491,7 +521,8 @@ public sealed partial class NPCSteeringSystem : SharedNPCSteeringSystem
     // TODO: Move these to movercontroller
 
     private float GetSprintSpeed(EntityUid uid, MovementSpeedModifierComponent? modifier = null)
-    {
+  
+  {
         if (!Resolve(uid, ref modifier, false))
         {
             return MovementSpeedModifierComponent.DefaultBaseSprintSpeed;
