@@ -1,5 +1,6 @@
 using System.Threading;
 using Content.Server.NPC.Components;
+using Robust.Shared.Map;
 
 namespace Content.Server.NPC.HTN;
 
@@ -56,4 +57,10 @@ public sealed partial class HTNComponent : NPCComponent
     /// </summary>
     [DataField]
     public bool Enabled = true;
+
+    /// <summary>
+    /// The last grid this NPC was on. Used to detect grid transitions and trigger replanning.
+    /// </summary>
+    [ViewVariables]
+    public EntityUid? LastGrid;
 }
