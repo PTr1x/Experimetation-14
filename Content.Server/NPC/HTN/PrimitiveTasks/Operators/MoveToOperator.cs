@@ -1,3 +1,5 @@
+url: https://raw.githubusercontent.com/PTr1x/Experimetation-14/master/Content.Server/NPC/HTN/PrimitiveTasks/Operators/MoveToOperator.cs
+
 using System.Threading;
 using System.Threading.Tasks;
 using Content.Server.NPC.Components;
@@ -14,7 +16,9 @@ namespace Content.Server.NPC.HTN.PrimitiveTasks.Operators;
 /// </summary>
 public sealed partial class MoveToOperator : HTNOperator, IHtnConditionalShutdown
 {
-    [Dependency] private readonly IEntityManager _entManager = default!;
+        private EntityUid? _lastGrid;
+
+[Dependency] private readonly IEntityManager _entManager = default!;
     private NPCSteeringSystem _steering = default!;
     private PathfindingSystem _pathfind = default!;
     private SharedTransformSystem _transform = default!;
@@ -55,7 +59,8 @@ public sealed partial class MoveToOperator : HTNOperator, IHtnConditionalShutdow
     [DataField("rangeKey")]
     public string RangeKey = "MovementRange";
 
-    /// <summary>
+    /// <summ
+ary>
     /// Do we only need to move into line of sight.
     /// </summary>
     [DataField("stopOnLineOfSight")]
@@ -103,7 +108,8 @@ public sealed partial class MoveToOperator : HTNOperator, IHtnConditionalShutdow
         // check if we or target are offgrid or on different grids // Wizden#38846
         var doDirectMove = !_entManager.TryGetComponent<MapGridComponent>(xform.GridUid, out var ownerGrid) ||
                       !_entManager.TryGetComponent<MapGridComponent>(_transform.GetGrid(targetCoordinates), out var targetGrid) ||
-                      ownerGrid != targetGrid;
+                      ownerGrid != targetGri
+d;
                   // End Wizden#38846
 
         var range = blackboard.GetValueOrDefault<float>(RangeKey, _entManager);
@@ -162,10 +168,18 @@ public sealed partial class MoveToOperator : HTNOperator, IHtnConditionalShutdow
 
     public override void Startup(NPCBlackboard blackboard)
     {
+        _lastGrid = null;
+        var owner = blackboard.GetValue<EntityUid>(NPCBlackboard.Owner);
+        if (_entManager.TryGetComponent<TransformComponent>(owner, out var xform))
+        {
+            _lastGrid = _transform.GetGrid(xform.Coordinates);
+        }
+    
         base.Startup(blackboard);
 
         // Need to remove the planning value for execution.
-        blackboard.Remove<EntityCoordinates>(NPCBlackboard.OwnerCoordinates);
+     
+   blackboard.Remove<EntityCoordinates>(NPCBlackboard.OwnerCoordinates);
         var targetCoordinates = blackboard.GetValue<EntityCoordinates>(TargetKey);
         var uid = blackboard.GetValue<EntityUid>(NPCBlackboard.Owner);
 
@@ -203,11 +217,27 @@ public sealed partial class MoveToOperator : HTNOperator, IHtnConditionalShutdow
     public override HTNOperatorStatus Update(NPCBlackboard blackboard, float frameTime)
     {
         var owner = blackboard.GetValue<EntityUid>(NPCBlackboard.Owner);
+        
+        // Check if grid has changed
+        if (_entManager.TryGetComponent<TransformComponent>(owner, out var xform))
+        {
+            var currentGrid = _transform.GetGrid(xform.Coordinates);
+            if (currentGrid != _lastGrid)
+            {
+                _lastGrid = currentGrid;
+                // If grid changed, we need to re-evaluate the path
+                return HTNOperatorStatus.Failed;
+            }
+        }
+        
+    
+        var owner = blackboard.GetValue<EntityUid>(NPCBlackboard.Owner);
 
         if (!_entManager.TryGetComponent<NPCSteeringComponent>(owner, out var steering))
             return HTNOperatorStatus.Failed;
 
-        // Just keep moving in the background and let the other tasks handle it.
+        // Just keep moving in the background and let the other tasks ha
+ndle it.
         if (ShutdownState == HTNPlanState.PlanFinished && steering.Status == SteeringStatus.Moving)
         {
             return HTNOperatorStatus.Finished;
