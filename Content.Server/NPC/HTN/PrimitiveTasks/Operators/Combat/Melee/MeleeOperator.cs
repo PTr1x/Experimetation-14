@@ -1,9 +1,12 @@
+url: https://raw.githubusercontent.com/PTr1x/Experimetation-14/master/Content.Server/NPC/HTN/PrimitiveTasks/Operators/Combat/Melee/MeleeOperator.cs
+
 using System.Threading;
 using System.Threading.Tasks;
 using Content.Server.NPC.Components;
 using Content.Shared.CombatMode;
 using Content.Shared.Mobs;
 using Content.Shared.Mobs.Components;
+using Robust.Shared.Map;
 
 namespace Content.Server.NPC.HTN.PrimitiveTasks.Operators.Combat.Melee;
 
@@ -13,6 +16,8 @@ namespace Content.Server.NPC.HTN.PrimitiveTasks.Operators.Combat.Melee;
 public sealed partial class MeleeOperator : HTNOperator, IHtnConditionalShutdown
 {
     [Dependency] private readonly IEntityManager _entManager = default!;
+    [Dependency] private readonly SharedTransformSystem _transform = default!;
+    [Dependency] private readonly GravitySystem _gravity = default!;
 
     /// <summary>
     /// When to shut the task down.
@@ -34,8 +39,17 @@ public sealed partial class MeleeOperator : HTNOperator, IHtnConditionalShutdown
 
     // Like movement we add a component and pass it off to the dedicated system.
 
-    public override void Startup(NPCBlackboard blackboard)
+        private EntityUid? _lastGrid;
+
+public override void Startup(NPCBlackboard blackboard)
     {
+        _lastGrid = null;
+        var owner = blackboard.GetValue<EntityUid>(NPCBlackboard.Owner);
+        if (_entManager.TryGetComponent<TransformComponent>(owner, out var xform))
+        {
+            _lastGrid = _transform.GetGrid(xform.Coordinates);
+        }
+    
         base.Startup(blackboard);
         var melee = _entManager.EnsureComponent<NPCMeleeCombatComponent>(blackboard.GetValue<EntityUid>(NPCBlackboard.Owner));
         melee.MissChance = blackboard.GetValueOrDefault<float>(NPCBlackboard.MeleeMissChance, _entManager);
@@ -51,7 +65,8 @@ public sealed partial class MeleeOperator : HTNOperator, IHtnConditionalShutdown
             return (false, null);
         }
 
-        if (_entManager.TryGetComponent<MobStateComponent>(target, out var mobState) &&
+        if (_entManager.TryGetComponent<MobStateComponent>(target, out v
+ar mobState) &&
             mobState.CurrentState > TargetState)
         {
             return (false, null);
@@ -84,6 +99,24 @@ public sealed partial class MeleeOperator : HTNOperator, IHtnConditionalShutdown
 
     public override HTNOperatorStatus Update(NPCBlackboard blackboard, float frameTime)
     {
+        var owner = blackboard.GetValue<EntityUid>(NPCBlackboard.Owner);
+        
+        // Check if grid has changed and if we can still attack in new conditions
+        if (_entManager.TryGetComponent<TransformComponent>(owner, out var xform))
+        {
+            var currentGrid = _transform.GetGrid(xform.Coordinates);
+            if (currentGrid != _lastGrid)
+            {
+                _lastGrid = currentGrid;
+                // If we're weightless, we can't melee attack properly
+                if (_gravity.IsWeightless(owner))
+                {
+                    return HTNOperatorStatus.Failed;
+                }
+            }
+        }
+        
+    
         base.Update(blackboard, frameTime);
         var owner = blackboard.GetValue<EntityUid>(NPCBlackboard.Owner);
         HTNOperatorStatus status;
@@ -110,7 +143,8 @@ public sealed partial class MeleeOperator : HTNOperator, IHtnConditionalShutdown
                         break;
                     default:
                         status = HTNOperatorStatus.Failed;
-                        break;
+ 
+                       break;
                 }
             }
         }
