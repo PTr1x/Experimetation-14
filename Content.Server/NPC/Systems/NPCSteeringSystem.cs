@@ -366,7 +366,7 @@ public sealed partial class NPCSteeringSystem : SharedNPCSteeringSystem
         var forceSteer = true;
         var moveMultiplier = 1f; // multiplier to acceleration we should actually move with // Wizden#38846
 
-        if (steering.CanSeek && !TrySeek(uid, mover, steering, body, xform, offsetRot, moveSpeed, acceleration, friction, interest, frameTime, ref forceSteer, ref moveMultiplier)) // Wizden#38846
+        if (steering.CanSeek && !TrySeek(uid, mover, steering, body, xform, offsetRot, moveSpeed, acceleration, friction, interest, frameTime, weightless, ref forceSteer, ref moveMultiplier)) // Wizden#38846
         {
             SetDirection(uid, mover, steering, Vector2.Zero);
             return;
