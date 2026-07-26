@@ -1,3 +1,7 @@
+url: https://raw.githubusercontent.com/PTr1x/Experimetation-14/2663fcacb1fcdadce3295719eef8841c77d2a1d0/Content.Server/NPC/Systems/NPCSteeringSystem.Context.cs
+
+title: https://raw.githubusercontent.com/PTr1x/Experimetation-14/2663fcacb1fcdadce3295719eef8841c77d2a1d0/Content.Server/NPC/Systems/NPCSteeringSystem.Context.cs
+
 using System.Linq;
 using System.Numerics;
 using Content.Server.Examine;
@@ -97,11 +101,22 @@ public sealed partial class NPCSteeringSystem
         float friction, // Wizden#38846
         Span<float> interest,
         float frameTime,
+        bool weightless, // NEW: Check if weightless
         ref bool forceSteer, // Wizden#38846
         ref float moveMultiplier) // Wizden#38846
     {
         var ourCoordinates = xform.Coordinates;
         var destinationCoordinates = steering.Coordinates;
+        
+        // Check if NPC can move in weightless environment
+        if (weightless && !HasComp<CanMoveInWeightlessComponent>(uid))
+        {
+            // Cannot move in weightless environment without the component
+            SetDirection(uid, mover, steering, Vector2.Zero);
+            steering.Status = SteeringStatus.NoPath;
+            return false;
+        }
+        
         var inLos = true;
 
         // check if we should ignore all pathing logic and go straight to the target coordinates // Wizden#38846
