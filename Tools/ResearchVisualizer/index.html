@@ -78,6 +78,50 @@
                                     <input type="range" min={0} max={6.28} step={0.1} value={rotation} 
                                            onChange={e => setRotation(parseFloat(e.target.value))} style={{width: '100%'}} />
                                 </div>
+                                <div>
+                                    <label style={{display: 'block', marginBottom: '0.5rem'}}>Tier Filter</label>
+                                    <div style={{display: 'flex', flexWrap: 'wrap', gap: '0.5rem'}}>
+                                        {tiers.map(tier => (
+                                            <button key={tier} onClick={() => setSelectedTier(tier)} 
+                                                    style={{
+                                                        padding: '0.25rem 0.75rem', borderRadius: '0.375rem',
+                                                        border: '1px solid ' + (selectedTier === tier ? '#6366f1' : '#e2e8f0'),
+                                                        background: selectedTier === tier ? '#6366f1' : 'white',
+                                                        color: selectedTier === tier ? 'white' : '#475569',
+                                                        cursor: 'pointer'
+                                                    }}>
+                                                {tier}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div style={{display: 'flex', gap: '0.5rem'}}>
+                                    <button onClick={() => setTechnologies(generateTechnologies(25))} 
+                                            style={{padding: '0.5rem 1rem', borderRadius: '0.375rem', background: '#6366f1', color: 'white', border: 'none', cursor: 'pointer'}}>
+                                        Randomize
+                                    </button>
+                                    <button onClick={() => setShowLabels(!showLabels)} 
+                                            style={{padding: '0.5rem 1rem', borderRadius: '0.375rem', background: 'white', color: '#475569', border: '1px solid #e2e8f0', cursor: 'pointer'}}>
+                                        {showLabels ? 'Hide Labels' : 'Show Labels'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style={{background: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0', gridColumn: 'span 2'}}>
+                            <div style={{padding: '1.25rem', borderBottom: '1px solid #e2e8f0'}}><div style={{fontSize: '1.125rem', fontWeight: '600'}}>Statistics</div></div>
+                            <div style={{padding: '1.25rem'}}>
+                                <div style={{display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem', marginBottom: '1rem'}}>
+                                    {tiers.slice(1).map(tier => (
+                                        <div key={tier} style={{textAlign: 'center'}}>
+                                            <div style={{fontSize: '0.875rem', fontWeight: '500', color: getTierColor(tier)}}>{tier}</div>
+                                            <div style={{fontSize: '1.5rem', fontWeight: '700'}}>{tierPoints[tier] || 0}</div>
+                                            <div style={{fontSize: '0.75rem', color: '#94a3b8'}}>Points</div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div style={{height: '1px', background: '#e2e8f0', margin: '1rem 0'}}></div>
+                                <p><strong>Total:</strong> {technologies.length} | <strong>Visible:</strong> {filteredTechs.length}</p>
                             </div>
                         </div>
                     </div>
