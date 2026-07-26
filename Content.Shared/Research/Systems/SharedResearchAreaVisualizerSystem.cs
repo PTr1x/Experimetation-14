@@ -133,6 +133,10 @@ public abstract class SharedResearchAreaVisualizerSystem : EntitySystem
             }
         }
         
+        // If no technologies available for this tier, return empty list
+        if (availableTechs.Count == 0)
+            return new List<string>();
+        
         // Shuffle and pick a few
         _random.Shuffle(availableTechs);
         var count = _random.Next(1, Math.Min(4, availableTechs.Count));
