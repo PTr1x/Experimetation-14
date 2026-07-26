@@ -1,3 +1,5 @@
+url: https://raw.githubusercontent.com/PTr1x/Experimetation-14/e303fb2277ea6dca53da62d38b46b1dac865893e/Resources/Prototypes/Entities/Mobs/NPCs/carp.yml
+
 url: https://raw.githubusercontent.com/PTr1x/Experimetation-14/8b754124e0b1c2d47929a9092f6d89a30d04b691/Resources/Prototypes/Entities/Mobs/NPCs/carp.yml
 
 url: https://raw.githubusercontent.com/PTr1x/Experimetation-14/master/Resources/Prototypes/Entities/Mobs/NPCs/carp.yml
@@ -72,7 +74,8 @@ url: https://raw.githubusercontent.com/PTr1x/Experimetation-14/master/Resources/
       soundHit:
         path: /Audio/Effects/bite.ogg
       damage:
-        types:
+        t
+ypes:
           Blunt: 5
           Slash: 7
     - type: TypingIndicator
@@ -80,8 +83,7 @@ url: https://raw.githubusercontent.com/PTr1x/Experimetation-14/master/Resources/
     - type: Tag
       tags:
         - Carp
-        - DoorBumpOp
-ener
+        - DoorBumpOpener
         - CannotSuicide
     - type: ReplacementAccent
       accent: genericAggressive
@@ -151,7 +153,8 @@ ener
 
 - type: entity
   parent: MobCarp
-  id: MobCarpRainbow
+  id: MobC
+arpRainbow
   name: rainbow carp
   description: Wow such a shiny fishie!
   categories: [ HideSpawnMenu ] # Frontier
@@ -232,6 +235,7 @@ t"
         shader: unshaded
     - type: Fixtures
       fixtures:
+
         fix1:
           shape:
             !type:PhysShapeCircle
