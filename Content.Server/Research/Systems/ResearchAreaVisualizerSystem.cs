@@ -9,6 +9,7 @@ public sealed partial class ResearchAreaVisualizerSystem : SharedResearchAreaVis
 {
     [Dependency] private readonly INetManager _netManager = default!;
     [Dependency] private readonly IEntityManager _entityManager = default!;
+    [Dependency] private readonly SharedPopupSystem _popup = default!;
 
     public override void Initialize()
     {
@@ -25,7 +26,7 @@ public sealed partial class ResearchAreaVisualizerSystem : SharedResearchAreaVis
             return;
 
         // Find the visualizer the player is interacting with
-        if (actor.PlayerSession.AttachedEntity is not { } attachedEntity ||
+        if (actor.PlayerSession.AttachedEntity is not EntityUid attachedEntity ||
             !TryComp<ResearchAreaVisualizerComponent>(attachedEntity, out var visualizer))
             return;
 
@@ -43,7 +44,7 @@ public sealed partial class ResearchAreaVisualizerSystem : SharedResearchAreaVis
             return;
 
         // Find the visualizer the player is interacting with
-        if (actor.PlayerSession.AttachedEntity is not { } attachedEntity ||
+        if (actor.PlayerSession.AttachedEntity is not EntityUid attachedEntity ||
             !TryComp<ResearchAreaVisualizerComponent>(attachedEntity, out var visualizer))
             return;
 
@@ -112,21 +113,10 @@ public sealed partial class ResearchAreaVisualizerSystem : SharedResearchAreaVis
             component.Points,
             component.TechPlacementsByTier,
             component.TierWeights,
-            component.InsertedDisk != null ? Name(component.InsertedDisk.Value) : null
+            component.InsertedDisk != null ? _entityManager.ToPrettyString(component.InsertedDisk.Value) : null
         );
 
-        foreach (var session in _netManager.GetSessions())
-        {
-            if (session.AttachedEntity is not { } entity || 
-                !TryComp<ActorComponent>(entity, out var actor) ||
-                actor.PlayerSession.AttachedEntity != entity)
-                continue;
-                
-            var ui = actor.PlayerSession.GetComponent<ResearchAreaVisualizerBoundUserInterface>();
-            if (ui != null && ui.Owner == uid)
-            {
-                ui.SendState(state);
-            }
-        }
+        var uiSystem = Get<BoundUserInterfaceSystem>();
+        uiSystem.SendState(uid, ResearchAreaVisualizerUiKey.Key, state);
     }
 }
