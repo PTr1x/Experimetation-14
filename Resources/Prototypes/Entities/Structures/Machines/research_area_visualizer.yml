@@ -1,0 +1,154 @@
+# Research Area Visualizer Machine
+# Shows research areas, randomizes tech placement by tiers, uses different data points
+
+- type: entity
+  id: ResearchAreaVisualizer
+  parent: [BaseMachinePowered, ConstructibleMachine]
+  name: research area visualizer
+  description: A machine that visualizes research areas and randomizes technology placement across tiers using different data point disks.
+  components:
+    - type: BindToStation
+      enabled: false
+
+    - type: Sprite
+      sprite: Structures/Machines/server.rsi
+      snapCardinals: true
+      layers:
+        - state: server-off
+        - state: server-on
+          visible: false
+          map: ["enum.PowerDeviceVisualLayers.Powered"]
+        - state: variant-research
+        - state: server_o
+          map: ["enum.WiresVisualLayers.MaintenancePanel"]
+
+    - type: PointLight
+      enabled: false
+      castShadows: false
+      radius: 1.2
+      energy: 3.0
+      color: "#b211b2"
+
+    - type: LitOnPowered
+
+    - type: ApcPowerReceiver
+      powerLoad: 300
+
+    - type: ExtensionCableReceiver
+
+    - type: WiresPanel
+
+    - type: WiresVisuals
+
+    - type: Machine
+      board: ResearchAreaVisualizerMachineCircuitboard
+
+    - type: ResearchAreaVisualizer
+      visualizationMode: PolarPlot
+      randomizeTechPlacement: true
+      tierDistribution:
+        - tier: 1
+          weight: 25
+        - tier: 2
+          weight: 50
+        - tier: 3
+          weight: 25
+
+    - type: DeviceNetwork
+      deviceNetId: Wired
+
+    - type: DeviceLinkSource
+      range: 10
+      ports:
+        - DataDiskReader
+
+    - type: UserInterface
+      interfaces:
+        enum.ResearchAreaVisualizerUiKey.Key:
+          type: ResearchAreaVisualizerBoundUserInterface
+
+    - type: ActivatableUI
+      key: enum.ResearchAreaVisualizerUiKey.Key
+
+    - type: Destructible
+      thresholds:
+        - trigger:
+            !type:DamageTrigger
+            damage: 600
+          behaviors:
+            - !type:DoActsBehavior
+              acts: ["Destruction"]
+        - trigger:
+            !type:DamageTrigger
+            damage: 300
+          behaviors:
+            - !type:DoActsBehavior
+              acts: ["Destruction"]
+            - !type:PlaySoundBehavior
+              sound:
+                collection: MetalBreak
+            - !type:SpawnEntitiesBehavior
+              spawn:
+                SheetSteel1:
+                  min: 1
+                  max: 2
+
+    - type: Appearance
+
+    - type: GenericVisualizer
+      visuals:
+        enum.PowerDeviceVisuals.Powered:
+          enum.PowerDeviceVisualLayers.Powered:
+            True: {visible: true}
+            False: {visible: false}
+
+    - type: AmbientOnPowered
+
+    - type: AmbientSound
+      volume: -9
+      range: 5
+      enabled: false
+      sound:
+        path: /Audio/Ambience/Objects/server_fans.ogg
+
+    - type: ContainerContainer
+      containers:
+        machine_board: !type:Container
+        machine_parts: !type:Container
+        disk_slot: !type:ContainerSlot
+
+    - type: ItemSlots
+      slots:
+        disk_slot:
+          name: Data Disk
+          insertSound:
+            path: /Audio/Machines/terminal_insert_disc.ogg
+          ejectSound:
+            path: /Audio/Machines/terminal_insert_disc.ogg
+          whitelist:
+            tags:
+              - ResearchDisk
+              - DataDisk
+
+    - type: GuideHelp
+      guides:
+        - Science
+        - Research
+
+# Circuit board for Research Area Visualizer
+- type: entity
+  id: ResearchAreaVisualizerMachineCircuitboard
+  parent: BaseMachineCircuitboard
+  name: research area visualizer machine board
+  description: A machine printed circuit board for the research area visualizer.
+  components:
+    - type: Sprite
+      state: science
+    - type: MachineBoard
+      prototype: ResearchAreaVisualizer
+      stackRequirements:
+        Plasma: 5
+        Gold: 3
+        Silver: 2
+    - type: BindToStation
+      enabled: false
