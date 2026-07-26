@@ -84,8 +84,7 @@ url: https://raw.githubusercontent.com/PTr1x/Experimetation-14/master/Resources/
       accent: genericAggressive
     - type: Speech
       speechVerb: LargeMob
-    - type: Int
-eractionPopup
+    - type: InteractionPopup
       interactSuccessString: petting-success-carp
       interactFailureString: petting-failure-carp
       interactFailureSound:
