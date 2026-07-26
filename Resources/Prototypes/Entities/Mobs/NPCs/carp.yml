@@ -1,3 +1,5 @@
+url: https://raw.githubusercontent.com/PTr1x/Experimetation-14/8b754124e0b1c2d47929a9092f6d89a30d04b691/Resources/Prototypes/Entities/Mobs/NPCs/carp.yml
+
 url: https://raw.githubusercontent.com/PTr1x/Experimetation-14/master/Resources/Prototypes/Entities/Mobs/NPCs/carp.yml
 
 - type: entity
@@ -78,7 +80,8 @@ url: https://raw.githubusercontent.com/PTr1x/Experimetation-14/master/Resources/
     - type: Tag
       tags:
         - Carp
-        - DoorBumpOpener
+        - DoorBumpOp
+ener
         - CannotSuicide
     - type: ReplacementAccent
       accent: genericAggressive
@@ -154,7 +157,8 @@ url: https://raw.githubusercontent.com/PTr1x/Experimetation-14/master/Resources/
   categories: [ HideSpawnMenu ] # Frontier
   components:
   - type: PointLight
-    radius: 1.5
+    r
+adius: 1.5
     energy: 2
   - type: RgbLightController
     layers: [ 0 ]
@@ -231,7 +235,8 @@ t"
         fix1:
           shape:
             !type:PhysShapeCircle
-            radius: 0.35 # Frontier 0.40<0.35 Lowered the value, to allow them to fit through the airlocks
+            radius: 0.35 # Frontier 0.40<0.35 Lowered the value, to allow them to fit thro
+ugh the airlocks
           density: 100
           mask:
             - FlyingMobMask
