@@ -1,0 +1,17 @@
+# Custom Research Server Circuit Board
+
+- type: entity
+  id: CustomResearchServerMachineCircuitboard
+  parent: BaseMachineCircuitboard
+  name: custom R&D server machine board
+  description: A machine printed circuit board for the custom R&D server.
+  components:
+    - type: Sprite
+      state: science
+    - type: MachineBoard
+      prototype: CustomResearchServer
+      stackRequirements:
+        Plasma: 5
+        Gold: 2
+    - type: BindToStation
+      enabled: false
