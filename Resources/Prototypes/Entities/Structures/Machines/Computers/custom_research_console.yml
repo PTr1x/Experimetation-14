@@ -1,0 +1,59 @@
+# Custom Research Console Prototypes
+# New entity using existing ResearchConsole sprite
+
+- type: entity
+  parent: BaseComputerAiAccess
+  id: CustomResearchConsole
+  name: custom research console
+  description: A specialized research console for dedicated R&D servers with custom data points.
+  components:
+    - type: Sprite
+      layers:
+        - map: ["computerLayerBody"]
+          state: computer
+        - map: ["computerLayerKeyboard"]
+          state: generic_keyboard
+        - map: ["computerLayerScreen"]
+          state: rdcomp
+        - map: ["computerLayerKeys"]
+          state: rd_key
+        - map: ["enum.WiresVisualLayers.MaintenancePanel"]
+          state: generic_panel_open
+
+    - type: ResearchClient
+    - type: ResearchConsole
+
+    - type: ActiveRadio
+      channels:
+        - Science
+
+    - type: TechnologyDatabase
+
+    - type: ActivatableUI
+      key: enum.ResearchConsoleUiKey.Key
+
+    - type: UserInterface
+      interfaces:
+        enum.ResearchConsoleUiKey.Key:
+          type: ResearchConsoleFrontierBoundUserInterface
+        enum.ResearchClientUiKey.Key:
+          type: ResearchClientBoundUserInterface
+        enum.WiresUiKey.Key:
+          type: WiresBoundUserInterface
+
+    - type: ApcPowerReceiver
+      powerLoad: 1000
+
+    - type: Computer
+      board: ResearchComputerCircuitboard
+
+    - type: AccessReader
+
+    - type: PointLight
+      radius: 1.5
+      energy: 4.0
+      color: "#b53ca1"
+
+    - type: GuideHelp
+      guides:
+        - Science
