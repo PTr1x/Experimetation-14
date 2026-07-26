@@ -43,16 +43,12 @@
     - type: Machine
       board: ResearchAreaVisualizerMachineCircuitboard
 
-    - type: ResearchAreaVisualizer
-      visualizationMode: PolarPlot
-      randomizeTechPlacement: true
-      tierDistribution:
-        - tier: 1
-          weight: 25
-        - tier: 2
-          weight: 50
-        - tier: 3
-          weight: 25
+    - type: ResearchAreaVisualizerComponent
+      mode: PolarPlot
+      tierWeights:
+        1: 0.25
+        2: 0.5
+        3: 0.25
 
     - type: DeviceNetwork
       deviceNetId: Wired
@@ -62,7 +58,7 @@
       ports:
         - DataDiskReader
 
-    - type: UserInterface
+    - type: BoundUserInterfaceComponent
       interfaces:
         enum.ResearchAreaVisualizerUiKey.Key:
           type: ResearchAreaVisualizerBoundUserInterface
@@ -78,7 +74,8 @@
           behaviors:
             - !type:DoActsBehavior
               acts: ["Destruction"]
-        - trigger:
+  
+      - trigger:
             !type:DamageTrigger
             damage: 300
           behaviors:
