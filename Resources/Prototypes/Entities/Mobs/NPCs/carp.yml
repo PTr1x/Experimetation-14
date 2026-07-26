@@ -1,3 +1,5 @@
+url: https://raw.githubusercontent.com/PTr1x/Experimetation-14/2663fcacb1fcdadce3295719eef8841c77d2a1d0/Resources/Prototypes/Entities/Mobs/NPCs/carp.yml
+
 - type: entity
   name: space carp
   id: BaseMobCarp
@@ -7,6 +9,7 @@
   components:
     - type: InputMover
     - type: MobMover
+    - type: CanMoveInWeightless
     - type: HTN
       rootTask:
         task: SimpleHostileCompound
@@ -81,7 +84,8 @@
       accent: genericAggressive
     - type: Speech
       speechVerb: LargeMob
-    - type: InteractionPopup
+    - type: Int
+eractionPopup
       interactSuccessString: petting-success-carp
       interactFailureString: petting-failure-carp
       interactFailureSound:
@@ -159,7 +163,8 @@
 - type: entity
   id: MobCarpSalvage
   parent: MobCarp
-  suffix: "Salvage Ruleset"
+  suffix: "Salvage Rulese
+t"
   categories: [ HideSpawnMenu ] # Frontier
   components:
     - type: NFSalvageMobRestrictions # Frontier: SalvageMobRestrictions<NFSalvageMobRestrictions
@@ -233,7 +238,8 @@
             - FlyingMobMask
           layer:
             - FlyingMobLayer
-    - type: MobThresholds
+    - type: MobThreshol
+ds
       thresholds:
         0: Alive
         82: Dead # Might seem random, but this brings up the hits to kill with a crusher mark to 3
