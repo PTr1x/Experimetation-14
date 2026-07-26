@@ -1,0 +1,144 @@
+# Custom Research Data Disks
+# Data disks with research points for use with CustomResearchConsole
+
+# Base prototype for research data disks
+- type: entity
+  id: BaseCustomResearchDataDisk
+  parent: BaseItem
+  name: research data disk
+  description: A data disk containing research points for specialized R&D tasks.
+  abstract: true
+  components:
+    - type: Sprite
+      sprite: Objects/Misc/disk.rsi
+      state: icon
+    - type: Item
+      size: Tiny
+    - type: StaticPrice
+      price: 500
+    - type: Data
+      dataType: ResearchPoints
+    - type: Tag
+      tags:
+        - ResearchDisk
+        - DataDisk
+
+# Tier 1 Research Data Disk - 1000 points
+- type: entity
+  id: CustomResearchDataDiskTier1
+  parent: BaseCustomResearchDataDisk
+  name: tier 1 research data disk
+  description: A basic data disk containing 1000 research points for entry-level R&D tasks.
+  suffix: T1
+  components:
+    - type: Sprite
+      sprite: Objects/Misc/disk.rsi
+      state: disk-blue
+    - type: Data
+      dataType: ResearchPoints
+      dataAmount: 1000
+    - type: StaticPrice
+      price: 500
+
+# Tier 2 Research Data Disk - 5000 points
+- type: entity
+  id: CustomResearchDataDiskTier2
+  parent: BaseCustomResearchDataDisk
+  name: tier 2 research data disk
+  description: An advanced data disk containing 5000 research points for mid-level R&D tasks.
+  suffix: T2
+  components:
+    - type: Sprite
+      sprite: Objects/Misc/disk.rsi
+      state: disk-green
+    - type: Data
+      dataType: ResearchPoints
+      dataAmount: 5000
+    - type: StaticPrice
+      price: 2000
+
+# Tier 3 Research Data Disk - 25000 points
+- type: entity
+  id: CustomResearchDataDiskTier3
+  parent: BaseCustomResearchDataDisk
+  name: tier 3 research data disk
+  description: A high-capacity data disk containing 25000 research points for advanced R&D tasks.
+  suffix: T3
+  components:
+    - type: Sprite
+      sprite: Objects/Misc/disk.rsi
+      state: disk-red
+    - type: Data
+      dataType: ResearchPoints
+      dataAmount: 25000
+    - type: StaticPrice
+      price: 10000
+
+# Specialized Industrial Research Disk
+- type: entity
+  id: CustomResearchDataDiskIndustrial
+  parent: BaseCustomResearchDataDisk
+  name: industrial research data disk
+  description: A specialized data disk containing 7500 research points focused on industrial technologies.
+  suffix: Industrial
+  components:
+    - type: Sprite
+      sprite: Objects/Misc/disk.rsi
+      state: disk-yellow
+    - type: Data
+      dataType: ResearchPoints
+      dataAmount: 7500
+      discipline: Industrial
+    - type: StaticPrice
+      price: 3000
+    - type: Tag
+      tags:
+        - ResearchDisk
+        - DataDisk
+        - Industrial
+
+# Specialized Arsenal Research Disk
+- type: entity
+  id: CustomResearchDataDiskArsenal
+  parent: BaseCustomResearchDataDisk
+  name: arsenal research data disk
+  description: A specialized data disk containing 10000 research points focused on weapons and combat technologies.
+  suffix: Arsenal
+  components:
+    - type: Sprite
+      sprite: Objects/Misc/disk.rsi
+      state: disk-orange
+    - type: Data
+      dataType: ResearchPoints
+      dataAmount: 10000
+      discipline: Arsenal
+    - type: StaticPrice
+      price: 4000
+    - type: Tag
+      tags:
+        - ResearchDisk
+        - DataDisk
+        - Arsenal
+
+# Specialized Science Research Disk
+- type: entity
+  id: CustomResearchDataDiskScience
+  parent: BaseCustomResearchDataDisk
+  name: science research data disk
+  description: A specialized data disk containing 15000 research points focused on scientific research.
+  suffix: Science
+  components:
+    - type: Sprite
+      sprite: Objects/Misc/disk.rsi
+      state: disk-purple
+    - type: Data
+      dataType: ResearchPoints
+      dataAmount: 15000
+      discipline: Science
+    - type: StaticPrice
+      price: 6000
+    - type: Tag
+      tags:
+        - ResearchDisk
+        - DataDisk
+        - Science
