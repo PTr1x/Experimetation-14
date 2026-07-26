@@ -1,5 +1,6 @@
 # Custom Research Data Disks
 # Data disks with research points for use with CustomResearchConsole
+# NOTE: Requires C# ResearchDataDiskComponent to be implemented for full functionality
 
 # Base prototype for research data disks
 - type: entity
@@ -16,8 +17,6 @@
       size: Tiny
     - type: StaticPrice
       price: 500
-    - type: Data
-      dataType: ResearchPoints
     - type: Tag
       tags:
         - ResearchDisk
@@ -34,9 +33,6 @@
     - type: Sprite
       sprite: Objects/Misc/disk.rsi
       state: disk-blue
-    - type: Data
-      dataType: ResearchPoints
-      dataAmount: 1000
     - type: StaticPrice
       price: 500
 
@@ -51,9 +47,6 @@
     - type: Sprite
       sprite: Objects/Misc/disk.rsi
       state: disk-green
-    - type: Data
-      dataType: ResearchPoints
-      dataAmount: 5000
     - type: StaticPrice
       price: 2000
 
@@ -68,9 +61,6 @@
     - type: Sprite
       sprite: Objects/Misc/disk.rsi
       state: disk-red
-    - type: Data
-      dataType: ResearchPoints
-      dataAmount: 25000
     - type: StaticPrice
       price: 10000
 
@@ -85,10 +75,6 @@
     - type: Sprite
       sprite: Objects/Misc/disk.rsi
       state: disk-yellow
-    - type: Data
-      dataType: ResearchPoints
-      dataAmount: 7500
-      discipline: Industrial
     - type: StaticPrice
       price: 3000
     - type: Tag
@@ -108,10 +94,6 @@
     - type: Sprite
       sprite: Objects/Misc/disk.rsi
       state: disk-orange
-    - type: Data
-      dataType: ResearchPoints
-      dataAmount: 10000
-      discipline: Arsenal
     - type: StaticPrice
       price: 4000
     - type: Tag
@@ -131,10 +113,6 @@
     - type: Sprite
       sprite: Objects/Misc/disk.rsi
       state: disk-purple
-    - type: Data
-      dataType: ResearchPoints
-      dataAmount: 15000
-      discipline: Science
     - type: StaticPrice
       price: 6000
     - type: Tag
