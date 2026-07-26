@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Area Visualizer</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+        
+        const polarEquation = (theta, e = 1.2) => {
+            return 1 + e * Math.pow(Math.cos((3/2) * theta), 2);
+        };
+        
+        const generateTechnologies = (count = 25) => {
+            const tiers = ['Basic', 'Intermediate', 'Advanced', 'Experimental', 'Frontier'];
+            const techs = [];
+            
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * 2 * Math.PI;
+                const r = polarEquation(angle, 1.2);
+                const radius = Math.min(0.9, Math.random() * 0.5 + 0.3);
+                const finalR = r * radius;
+                
+                techs.push({
+                    id: 'tech_' + i,
+                    name: 'Technology ' + (i + 1),
+                    tier: tiers[Math.floor(Math.random() * tiers.length)],
+                    points: Math.floor(Math.random() * 1000) + 100,
+                    angle: angle,
+                    radius: finalR / polarEquation(angle, 1.2)
+                });
+            }
+            
+            return techs;
+        };
+        
+        const polarToCartesian = (r, theta) => ({
+            x: r * Math.cos(theta),
+            y: r * Math.sin(theta)
+        });
+        
+        const getTierColor = (tier) => {
+            const colors = {
+                'Basic': '#3b82f6',
+                'Intermediate': '#10b981',
+                'Advanced': '#f59e0b',
+                'Experimental': '#ef4444',
+                'Frontier': '#8b5cf6'
+            };
+            return colors[tier] || '#6b7280';
+        };
+        
+        const ResearchVisualizer = () => {
+            const [technologies, setTechnologies] = useState(generateTechnologies(25));
+            const [eccentricity, setEccentricity] = useState(1.2);
+            const [rotation, setRotation] = useState(0);
+            const [showLabels, setShowLabels] = useState(true);
+            const [selectedTier, setSelectedTier] = useState('All');
+            
+            const polarPoints = useMemo(() => {
+                const points = [];
+                for (let i = 0; i < 100; i++) {
+                    const theta = (i / 100) * 2 * Math.PI + rotation;
+                    const r = polarEquation(theta, eccentricity);
+                    points.push(polarToCartesian(r * 150, theta));
+                }
+                return points;
+            }, [eccentricity, rotation]);
+            
+            const filteredTechs = useMemo(() => {
+                if (selectedTier === 'All') return technologies;
+                return technologies.filter(tech => tech.tier === selectedTier);
+            }, [technologies, selectedTier]);
+            
+            const randomizeTechnologies = () => {
+                setTechnologies(generateTechnologies(25));
+            };
+            
+            const tiers = useMemo(() => {
+                const uniqueTiers = [...new Set(technologies.map(tech => tech.tier))];
+                return ['All', ...uniqueTiers];
+            }, [technologies]);
+            
+            const tierPoints = useMemo(() => {
+                const pointsByTier = {};
+                technologies.forEach(tech => {
+                    pointsByTier[tech.tier] = (pointsByTier[tech.tier] || 0) + tech.points;
+                });
+                return pointsByTier;
+            }, [technologies]);
+            
+            return (
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px' }}>
+                    <h1 style={{ fontSize: '1.875rem', fontWeight: '700', textAlign: 'center', marginBottom: '1.5rem' }}>
+                        Research Area Visualizer
+                    </h1>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                        <div style={{ background: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0' }}>
+                            <div style={{ padding: '1.25rem', borderBottom: '1px solid #e2e8f0' }}>
+                                <div style={{ fontSize: '1.125rem', fontWeight: '600' }}>Controls</div>
+                            </div>
+                            <div style={{ padding: '1.25rem' }}>
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#475569', marginBottom: '0.5rem' }}>
+                                        Eccentricity: {eccentricity.toFixed(2)}
+                                    </label>
+                                    <input
+                                        type="range"
+                                        min={0.1}
+                                        max={2}
+                                        step={0.1}
+                                        value={eccentricity}
+                                        onChange={(e) => setEccentricity(parseFloat(e.target.value))}
+                                        style={{ width: '100%' }}
+                                    />
+                                </div>
+                                
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#475569', marginBottom: '0.5rem' }}>
+                                        Rotation: {(rotation * 180 / Math.PI).toFixed(0)}°
+                                    </label>
+                                    <input
+                                        type="range"
+                                        min={0}
+                                        max={2 * Math.PI}
+                                        step={0.1}
+                                        value={rotation}
+                                        onChange={(e) => setRotation(parseFloat(e.target.value))}
+                                        style={{ width: '100%' }}
+                                    />
+                                </div>
+                                
+                                <div style={{ marginBottom: '1rem' }}>
+                                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#475569', marginBottom: '0.5rem' }}>
+                                        Tier Filter
+                                    </label>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                        {tiers.map(tier => (
+                                            <button
+                                                key={tier}
+                                                onClick={() => setSelectedTier(tier)}
+                                                style={{
+                                                    padding: '0.25rem 0.75rem',
+                                                    fontSize: '0.75rem',
+                                                    borderRadius: '0.375rem',
+                                                    border: '1px solid ' + (selectedTier === tier ? '#6366f1' : '#e2e8f0'),
+                                                    background: selectedTier === tier ? '#6366f1' : 'white',
+                                                    color: selectedTier === tier ? 'white' : '#475569',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                {tier}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <button onClick={randomizeTechnologies} style={{
+                                        padding: '0.5rem 1rem',
+                                        borderRadius: '0.375rem',
+                                        fontSize: '0.875rem',
+                                        fontWeight: '500',
+                                        background: '#6366f1',
+                                        color: 'white',
+                                        border: 'none',
+                                        cursor: 'pointer'
+                                    }}>
+                                        Randomize Technologies
+                                    </button>
+                                    <button onClick={() => setShowLabels(!showLabels)} style={{
+                                        padding: '0.5rem 1rem',
+                                        borderRadius: '0.375rem',
+                                        fontSize: '0.875rem',
+                                        fontWeight: '500',
+                                        background: 'white',
+                                        color: '#475569',
+                                        border: '1px solid #e2e8f0',
+                                        cursor: 'pointer'
+                                    }}>
+                                        {showLabels ? 'Hide Labels' : 'Show Labels'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ background: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0', gridColumn: 'span 2' }}>
+                            <div style={{ padding: '1.25rem', borderBottom: '1px solid #e2e8f0' }}>
+                                <div style={{ fontSize: '1.125rem', fontWeight: '600' }}>Research Statistics</div>
+                            </div>
+                            <div style={{ padding: '1.25rem' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem', marginBottom: '1rem' }}>
+                                    {tiers.slice(1).map(tier => (
+                                        <div key={tier} style={{ textAlign: 'center' }}>
+                                            <div style={{ fontSize: '0.875rem', fontWeight: '500', color: getTierColor(tier) }}>
+                                                {tier}
+                                            </div>
+                                            <div style={{ fontSize: '1.5rem', fontWeight: '700' }}>
+                                                {tierPoints[tier] || 0}
+                                            </div>
+                                            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                                                Points
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div style={{ height: '1px', background: '#e2e8f0', margin: '1rem 0' }}></div>
+                                <div style={{ fontSize: '0.875rem' }}>
+                                    <p><strong>Total Technologies:</strong> {technologies.length}</p>
+                                    <p><strong>Visible Technologies:</strong> {filteredTechs.length}</p>
+                                    <p><strong>Polar Equation:</strong> r = 1 + {eccentricity.toFixed(2)} * cos(3/2 * θ)²</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={{ background: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0', marginBottom: '1.5rem' }}>
+                        <div style={{ padding: '1.25rem', borderBottom: '1px solid #e2e8f0' }}>
+                            <div style={{ fontSize: '1.125rem', fontWeight: '600' }}>Research Area Map</div>
+                        </div>
+                        <div style={{ padding: '1.25rem' }}>
+                            <div style={{ width: '100%', height: '500px', border: '1px solid #e2e8f0', borderRadius: '0.5rem', backgroundColor: '#f8fafc', position: 'relative' }}>
+                                <svg viewBox="-200 -200 400 400" style={{ width: '100%', height: '100%' }} preserveAspectRatio="xMidYMid meet">
+                                    <defs>
+                                        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e5e7eb" strokeWidth="0.5" />
+                                        </pattern>
+                                    </defs>
+                                    <rect width="400" height="400" fill="url(#grid)" />
+                                    
+                                    <path
+                                        d={polarPoints.map((p, i) => i === 0 ? 'M ' + p.x + ' ' + p.y : 'L ' + p.x + ' ' + p.y).join('') + ' Z'}
+                                        fill="rgba(139, 92, 246, 0.2)"
+                                        stroke="#8b5cf6"
+                                        strokeWidth="2"
+                                    />
+                                    
+                                    <line x1="-200" y1="0" x2="200" y2="0" stroke="#6b7280" strokeWidth="1" />
+                                    <line x1="0" y1="-200" x2="0" y2="200" stroke="#6b7280" strokeWidth="1" />
+                                    
+                                    {filteredTechs.map(tech => {
+                                        const polarR = polarEquation(tech.angle, eccentricity) * tech.radius * 150;
+                                        const pos = polarToCartesian(polarR, tech.angle + rotation);
+                                        const color = getTierColor(tech.tier);
+                                        
+                                        return (
+                                            <g key={tech.id}>
+                                                <circle
+                                                    cx={pos.x}
+                                                    cy={pos.y}
+                                                    r={tech.points / 200}
+                                                    fill={color}
+                                                    stroke="white"
+                                                    strokeWidth="1"
+                                                    opacity="0.8"
+                                                />
+                                                {showLabels && (
+                                                    <text
+                                                        x={pos.x + (tech.points / 200 + 5) * Math.cos(tech.angle + rotation)}
+                                                        y={pos.y + (tech.points / 200 + 5) * Math.sin(tech.angle + rotation)}
+                                                        fontSize="10"
+                                                        fill="#1f293b"
+                                                        textAnchor="middle"
+                                                    >
+                                                        {tech.name}
+                                                    </text>
+                                                )}
+                                                <text
+                                                    x={pos.x}
+                                                    y={pos.y}
+                                                    fontSize="8"
+                                                    fill="white"
+                                                    textAnchor="middle"
+                                                    dy="3"
+                                                >
+                                                    {tech.tier.substring(0, 3)}
+                                                </text>
+                                            </g>
+                                        );
+                                    })}
+                                    
+                                    <circle cx="0" cy="0" r="4" fill="#1f293b" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={{ background: 'white', borderRadius: '0.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '1px solid #e2e8f0' }}>
+                        <div style={{ padding: '1.25rem', borderBottom: '1px solid #e2e8f0' }}>
+                            <div style={{ fontSize: '1.125rem', fontWeight: '600' }}>Technology List</div>
+                        </div>
+                        <div style={{ padding: '1.25rem', overflow: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                        <th style={{ padding: '0.5rem', textAlign: 'left', fontWeight: '600', color: '#475569' }}>Name</th>
+                                        <th style={{ padding: '0.5rem', textAlign: 'left', fontWeight: '600', color: '#475569' }}>Tier</th>
+                                        <th style={{ padding: '0.5rem', textAlign: 'left', fontWeight: '600', color: '#475569' }}>Points</th>
+                                        <th style={{ padding: '0.5rem', textAlign: 'left', fontWeight: '600', color: '#475569' }}>Angle</th>
+                                        <th style={{ padding: '0.5rem', textAlign: 'left', fontWeight: '600', color: '#475569' }}>Radius</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredTechs.map(tech => (
+                                        <tr key={tech.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                            <td style={{ padding: '0.5rem' }}>{tech.name}</td>
+                                            <td style={{ padding: '0.5rem' }}>
+                                                <span style={{
+                                                    padding: '0.25rem 0.5rem',
+                                                    borderRadius: '9999px',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: '500',
+                                                    backgroundColor: getTierColor(tech.tier) + '20',
+                                                    color: getTierColor(tech.tier)
+                                                }}>
+                                                    {tech.tier}
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '0.5rem' }}>{tech.points}</td>
+                                            <td style={{ padding: '0.5rem' }}>{(tech.angle * 180 / Math.PI).toFixed(1)}°</td>
+                                            <td style={{ padding: '0.5rem' }}>{tech.radius.toFixed(2)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<ResearchVisualizer />);
+    </script>
+</body>
+</html>
