@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Robust.Client.UserInterface.Controls;assembly=Robust.Client"
+    x:Class="Content.Client.Research.UI.ResearchConsoleWindow"
+    Title="Research Console" 
+    Width="1024" 
+    Height="768"
+    ResizeMode="CanResizeWithGrip">
+    
+    <Window.Resources>
+        <!-- Styles for the UI elements -->
+        <Style x:Key="TitleLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="#FFD4D4D4" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+        
+        <Style x:Key="SectionLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#FFB8B8B8" />
+            <Setter Property="Margin" Value="0,8,0,4" />
+        </Style>
+        
+        <Style x:Key="InfoLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="#FFE0E0E0" />
+            <Setter Property="Margin" Value="0,2,0,2" />
+        </Style>
+        
+        <Style x:Key="ResearchButton" TargetType="Button">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="8,6,8,6" />
+            <Setter Property="Margin" Value="4,4,4,4" />
+            <Setter Property="Background" Value="#FF3A3A4A" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#FF4A4A5A" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+        
+        <Style x:Key="CategoryButton" TargetType="Button">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="12,8,12,8" />
+            <Setter Property="Margin" Value="2,2,2,2" />
+            <Setter Property="Background" Value="#FF2D2D38" />
+            <Setter Property="Foreground" Value="#FFD4D4D4" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#FF5A5A6A" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+        
+        <Style x:Key="ProgressBar" TargetType="ProgressBar">
+            <Setter Property="Height" Value="20" />
+            <Setter Property="Margin" Value="0,4,0,4" />
+            <Setter Property="Background" Value="#FF2D2D30" />
+            <Setter Property="Foreground" Value="#FF4CAF50" />
+        </Style>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" /> <!-- Categories -->
+            <ColumnDefinition Width="*" />    <!-- Research List -->
+            <ColumnDefinition Width="250" /> <!-- Details -->
+        </Grid.ColumnDefinitions>
+        
+        <!-- Categories Panel -->
+        <Border Grid.Column="0" 
+                Background="#FF1E1E24" 
+                BorderBrush="#FF3A3A4A" 
+                BorderThickness="0,0,1,0" 
+                Margin="0">
+            <StackPanel VerticalAlignment="Stretch">
+                <Label Style="{StaticResource SectionLabel}" 
+                       Content="Categories" 
+                       HorizontalAlignment="Center" />
+                
+                <ListBox x:Name="CategoryList" 
+                        Background="Transparent" 
+                        BorderThickness="0" 
+                        SelectionMode="Single">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border BorderBrush="Transparent" BorderThickness="1">
+                                            <Button Style="{StaticResource CategoryButton}" 
+                                                    Content="{TemplateBinding Content}" 
+                                                    HorizontalAlignment="Stretch" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </StackPanel>
+        </Border>
+        
+        <!-- Research List Panel -->
+        <Border Grid.Column="1" 
+                Background="#FF242428" 
+                BorderBrush="#FF3A3A4A" 
+                BorderThickness="0,0,1,0" 
+                Margin="0">
+            <StackPanel VerticalAlignment="Stretch">
+                <Label Style="{StaticResource SectionLabel}" 
+                       Content="Available Research" 
+                       HorizontalAlignment="Center" />
+                
+                <!-- Search Box -->
+                <TextBox x:Name="SearchBox" 
+                        Watermark="Search..." 
+                        Margin="8,4,8,8" 
+                        Background="#FF2D2D38" 
+                        Foreground="#FFE0E0E0" 
+                        BorderBrush="#FF5A5A6A" />
+                
+                <!-- Research Items -->
+                <ScrollViewer VerticalAlignment="Stretch" 
+                             HorizontalAlignment="Stretch">
+                    <ItemsControl x:Name="ResearchItems" 
+                                 ItemsSource="{Binding AvailableResearch}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#FF2D2D30" 
+                                        BorderBrush="#FF4A4A50" 
+                                        BorderThickness="1" 
+                                        Margin="4,2,4,2" 
+                                        Padding="8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <StackPanel Grid.Column="0" Orientation="Vertical">
+                                            <Label Style="{StaticResource InfoLabel}" 
+                                                   Content="{Binding Name}" 
+                                                   FontWeight="SemiBold" />
+                                            <Label Style="{StaticResource InfoLabel}" 
+                                                   Content="{Binding Description}" 
+                                                   FontSize="12" 
+                                                   Foreground="#FF8A8A8A" />
+                                            <ProgressBar Style="{StaticResource ProgressBar}" 
+                                                        Value="{Binding Progress}" 
+                                                        Maximum="100" />
+                                        </StackPanel>
+                                        
+                                        <Button Grid.Column="1" 
+                                                Style="{StaticResource ResearchButton}" 
+                                                Content="Research" 
+                                                Width="100" 
+                                                Command="{Binding ResearchCommand}" 
+                                                CommandParameter="{Binding}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </StackPanel>
+        </Border>
+        
+        <!-- Details Panel -->
+        <Border Grid.Column="2" 
+                Background="#FF1E1E24" 
+                BorderBrush="#FF3A3A4A" 
+                BorderThickness="1,0,0,0" 
+                Margin="0">
+            <StackPanel VerticalAlignment="Stretch">
+                <Label Style="{StaticResource SectionLabel}" 
+                       Content="Details" 
+                       HorizontalAlignment="Center" />
+                
+                <ScrollViewer VerticalAlignment="Stretch" 
+                             HorizontalAlignment="Stretch">
+                    <StackPanel>
+                        <Label Style="{StaticResource TitleLabel}" 
+                               Content="{Binding SelectedResearch.Name}" 
+                               x:Name="DetailName" />
+                        
+                        <Label Style="{StaticResource InfoLabel}" 
+                               Content="{Binding SelectedResearch.Description}" 
+                               TextWrapping="Wrap" 
+                               x:Name="DetailDescription" />
+                        
+                        <Label Style="{StaticResource SectionLabel}" 
+                               Content="Requirements" 
+                               Margin="0,16,0,4" />
+                        
+                        <ItemsControl ItemsSource="{Binding SelectedResearch.Requirements}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Label Style="{StaticResource InfoLabel}" 
+                                           Content="• {Binding}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        
+                        <Label Style="{StaticResource SectionLabel}" 
+                               Content="Cost" 
+                               Margin="0,16,0,4" />
+                        
+                        <Label Style="{StaticResource InfoLabel}" 
+                               Content="{Binding SelectedResearch.Cost, StringFormat=Research Points: {0}}" 
+                               x:Name="DetailCost" />
+                        
+                        <Button Style="{StaticResource ResearchButton}" 
+                                Content="Start Research" 
+                                Margin="0,16,0,0" 
+                                HorizontalAlignment="Stretch" 
+                                Command="{Binding StartResearchCommand}" 
+                                x:Name="StartButton" />
+                    </StackPanel>
+                </ScrollViewer>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
