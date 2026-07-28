@@ -1,0 +1,195 @@
+# Research Visualizer Prototypes - Consolidated File
+
+# ============================================================================
+# Research Area Visualizer Machine
+# ============================================================================
+
+- type: entity
+  parent: BaseMachine
+  id: ResearchAreaVisualizer
+  name: research area visualizer
+  description: A machine that visualizes research areas using polar plot formulas and randomizes tech placement by tiers.
+  components:
+    - type: Sprite
+      sprite: Structures/Machines/computer.rsi
+      layers:
+        - state: computerLayerBody
+          color: "#4a6baf"
+        - state: computerLayerKeyboard
+          map: [ "computerLayerKeyboard" ]
+        - state: computerLayerScreen
+          map: [ "computerLayerScreen" ]
+          color: "#1a2b4f"
+    - type: ResearchAreaVisualizerComponent
+      maxPoints: 1000000
+      tierWeights:
+        1: 0.25
+        2: 0.50
+        3: 0.25
+      technologiesByTier:
+        1:
+          - "BasicEngineering"
+          - "BasicScience"
+          - "BasicMedical"
+          - "BasicRobotics"
+        2:
+          - "AdvancedEngineering"
+          - "AdvancedScience"
+          - "PowerGeneration"
+          - "AdvancedRobotics"
+        3:
+          - "ExoticEngineering"
+          - "SingularityResearch"
+          - "Bluespace"
+          - "ExoticMaterials"
+    - type: UserInterface
+      interfaces:
+        - key: enum.ResearchAreaVisualizerUiKey.Key
+          type: ResearchAreaVisualizerBoundUserInterface
+    - type: ApcPowerReceiver
+      powerLoad: 200
+    - type: Transform
+    - type: Physics
+      bodyType: Static
+    - type: Fixtures
+      fixtures:
+        - shape:
+            !type:PhysShapeAabb
+            bounds: "-0.4,-0.2,0.4,0.4"
+          density: 100
+          mask:
+            - Machine
+          layer:
+            - Machine
+    - type: Anchorable
+    - type: Pullable
+    - type: InteractionOutline
+    # NOTE: disk_slot is defined but currently not used - disk insertion/ejection is handled manually via messages
+    # TODO: Consider implementing standard ItemSlotsSystem integration instead of custom message handling
+    - type: ItemSlots
+      slots:
+        - name: disk_slot
+          startingItem: null
+          whitelist:
+            tags:
+              - CustomResearchDisk
+          insertSound:
+            path: /Audio/Machines/computer_insert_disk.ogg
+          ejectSound:
+            path: /Audio/Machines/computer_eject_disk.ogg
+
+# ============================================================================
+# Custom Research Console
+# ============================================================================
+
+- type: entity
+  parent: BaseComputer
+  id: CustomResearchConsole
+  name: custom research console
+  description: A customizable research console for advanced research operations.
+  components:
+    - type: Sprite
+      sprite: Structures/Machines/computer.rsi
+      layers:
+        - state: computerLayerBody
+        - state: computerLayerKeyboard
+          map: [ "computerLayerKeyboard" ]
+        - state: computerLayerScreen
+          map: [ "computerLayerScreenResearch" ]
+    - type: ResearchClient
+    - type: ResearchConsole
+    - type: TechnologyDatabase
+    - type: UserInterface
+      interfaces:
+        - key: enum.ResearchConsoleUiKey.Key
+          type: ResearchConsoleBoundUserInterface
+    - type: ApcPowerReceiver
+    - type: Transform
+    - type: Physics
+      bodyType: Static
+    - type: Fixtures
+      fixtures:
+        - shape:
+            !type:PhysShapeAabb
+            bounds: "-0.4,-0.2,0.4,0.4"
+          density: 100
+          mask:
+            - Machine
+          layer:
+            - Machine
+    - type: Anchorable
+    - type: Pullable
+    - type: InteractionOutline
+
+# ============================================================================
+# Research Data Disks
+# ============================================================================
+
+# Base abstract disk prototype
+- type: entity
+  id: BaseCustomResearchDataDisk
+  abstract: true
+  parent: BaseItem
+  components:
+    - type: Sprite
+      sprite: Objects/Misc/disk.rsi
+      state: disk
+    - type: Item
+      size: Tiny
+      shape:
+        !type:PhysShapeCircle
+        radius: 0.1
+    - type: ResearchDataDiskComponent
+      used: false
+    - type: Tag
+      tags:
+        - CustomResearchDisk
+
+# Tier 1 Disk - Blue
+- type: entity
+  parent: BaseCustomResearchDataDisk
+  id: CustomResearchDataDiskTier1
+  name: tier 1 research data disk
+  description: A blue data disk containing basic research data. Worth 1000 research points.
+  components:
+    - type: Sprite
+      color: "#4a90d9"
+    - type: ResearchDataDiskComponent
+      points: 1000
+      tier: 1
+      technologies:
+        - "BasicEngineering"
+        - "BasicScience"
+
+# Tier 2 Disk - Green  
+- type: entity
+  parent: BaseCustomResearchDataDisk
+  id: CustomResearchDataDiskTier2
+  name: tier 2 research data disk
+  description: A green data disk containing advanced research data. Worth 5000 research points.
+  components:
+    - type: Sprite
+      color: "#50c878"
+    - type: ResearchDataDiskComponent
+      points: 5000
+      tier: 2
+      technologies:
+        - "AdvancedEngineering"
+        - "PowerGeneration"
+
+# Tier 3 Disk - Red
+- type: entity
+  parent: BaseCustomResearchDataDisk
+  id: CustomResearchDataDiskTier3
+  name: tier 3 research data disk  
+  description: A red data disk containing exotic research data. Worth 25000 research points.
+  components:
+    - type: Sprite
+      color: "#d95050"
+    - type: ResearchDataDiskComponent
+      points: 25000
+      tier: 3
+      technologies:
+        - "ExoticEngineering"
+        - "SingularityResearch"
+        - "Bluespace"
