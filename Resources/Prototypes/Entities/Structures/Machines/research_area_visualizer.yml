@@ -1,0 +1,55 @@
+- type: entity
+  parent: BaseMachine
+  id: ResearchAreaVisualizer
+  name: research area visualizer
+  description: A machine that visualizes research areas using polar plot formulas and randomizes tech placement by tiers.
+  components:
+    - type: Sprite
+      sprite: Structures/Machines/computer.rsi
+      layers:
+        - state: computerLayerBody
+          color: "#4a6baf"
+        - state: computerLayerKeyboard
+          map: [ "computerLayerKeyboard" ]
+        - state: computerLayerScreen
+          map: [ "computerLayerScreen" ]
+          color: "#1a2b4f"
+    - type: ResearchAreaVisualizerComponent
+      tierWeights:
+        1: 0.25
+        2: 0.50
+        3: 0.25
+    - type: UserInterface
+      interfaces:
+        - key: enum.ResearchAreaVisualizerUiKey.Key
+          type: ResearchAreaVisualizerBoundUserInterface
+    - type: ApcPowerReceiver
+      powerLoad: 200
+    - type: Transform
+    - type: Physics
+      bodyType: Static
+    - type: Fixtures
+      fixtures:
+        - shape:
+            !type:PhysShapeAabb
+            bounds: "-0.4,-0.2,0.4,0.4"
+          density: 100
+          mask:
+            - Machine
+          layer:
+            - Machine
+    - type: Anchorable
+    - type: Pullable
+    - type: InteractionOutline
+    - type: ItemSlots
+      slots:
+        - name: disk_slot
+          startingItem: null
+          whitelist:
+            tags:
+              - CustomResearchDisk
+              - ResearchDataDisk
+          insertSound:
+            path: /Audio/Machines/computer_insert_disk.ogg
+          ejectSound:
+            path: /Audio/Machines/computer_eject_disk.ogg
