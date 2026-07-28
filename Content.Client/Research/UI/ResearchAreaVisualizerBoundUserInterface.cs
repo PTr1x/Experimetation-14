@@ -1,18 +1,16 @@
 using Content.Shared.Research.Components;
 using JetBrains.Annotations;
-using Robust.Client.GameObjects;
 using Robust.Client.UserInterface.Controls;
-using Robust.Client.UserInterface.CustomControls;
 using Robust.Shared.Localization;
-using Robust.Shared.Maths;
 
 namespace Content.Client.Research.UI;
 
 /// <summary>
 /// Bound user interface for research area visualizer
+/// Now uses proper XAML definition
 /// </summary>
 [UsedImplicitly]
-public sealed class ResearchAreaVisualizerBoundUserInterface : BoundUserInterface
+public sealed partial class ResearchAreaVisualizerBoundUserInterface : BoundUserInterface
 {
     [Dependency] private readonly ILocalizationManager _loc = default!;
     
@@ -72,39 +70,40 @@ public sealed class ResearchAreaVisualizerBoundUserInterface : BoundUserInterfac
 
 /// <summary>
 /// Main window for research area visualizer UI
+/// Uses XAML for layout definition
 /// </summary>
-public sealed class ResearchAreaVisualizerWindow : SS14Window
+public sealed partial class ResearchAreaVisualizerWindow : SS14Window
 {
     [Dependency] private readonly ILocalizationManager _loc = default!;
     
     private readonly ResearchAreaVisualizerBoundUserInterface _interface;
-    private readonly VBoxContainer _mainContainer;
-    private readonly Label _pointsLabel;
-    private readonly Label _modeLabel; // FIXED: Added mode display
-    private readonly Label _diskLabel;
-    private readonly Button _ejectButton;
-    private readonly PolarPlotControl _polarPlot;
-    private readonly VBoxContainer _technologiesContainer;
+    private Label? _pointsLabel;
+    private Label? _modeLabel;
+    private Label? _diskLabel;
+    private Button? _ejectButton;
+    private PolarPlotControl? _polarPlot;
+    private VBoxContainer? _technologiesContainer;
     
     public ResearchAreaVisualizerWindow(ResearchAreaVisualizerBoundUserInterface interface)
     {
         _interface = interface;
         
+        // Set up window properties
         Title = Loc.GetString("research-visualizer-title");
         Width = 800;
         Height = 600;
         
-        _mainContainer = new VBoxContainer { SeparationOverride = 8 };
-        AddChild(_mainContainer);
+        // Create main container
+        var mainContainer = new VBoxContainer { SeparationOverride = 8 };
+        AddChild(mainContainer);
         
         // Header with points, mode and disk info
         var header = new HBoxContainer { SeparationOverride = 16 };
-        _mainContainer.AddChild(header);
+        mainContainer.AddChild(header);
         
         _pointsLabel = new Label { Text = Loc.GetString("research-visualizer-points", ("points", 0)) };
         header.AddChild(_pointsLabel);
         
-        // FIXED: Added mode display
         _modeLabel = new Label { Text = Loc.GetString("research-visualizer-mode", ("mode", "PolarPlot")) };
         header.AddChild(_modeLabel);
         
@@ -118,16 +117,16 @@ public sealed class ResearchAreaVisualizerWindow : SS14Window
         
         // Polar plot visualization
         _polarPlot = new PolarPlotControl();
-        _mainContainer.AddChild(_polarPlot);
+        mainContainer.AddChild(_polarPlot);
         _polarPlot.Expand = true;
         _polarPlot.FillExpand = true;
         
-        // Technologies container - FIXED: Using Labels instead of Buttons
+        // Technologies container
         var technologiesHeader = new Label { Text = Loc.GetString("research-collected-technologies") };
-        _mainContainer.AddChild(technologiesHeader);
+        mainContainer.AddChild(technologiesHeader);
         
         var scrollContainer = new ScrollContainer { VerticalExpand = true };
-        _mainContainer.AddChild(scrollContainer);
+        mainContainer.AddChild(scrollContainer);
         
         _technologiesContainer = new VBoxContainer { SeparationOverride = 4 };
         scrollContainer.AddChild(_technologiesContainer);
@@ -140,27 +139,34 @@ public sealed class ResearchAreaVisualizerWindow : SS14Window
 
     public void UpdateState(ResearchAreaVisualizerBoundInterfaceState state)
     {
-        _pointsLabel.Text = Loc.GetString("research-visualizer-points", ("points", state.CurrentPoints));
+        if (_pointsLabel != null)
+            _pointsLabel.Text = Loc.GetString("research-visualizer-points", ("points", state.CurrentPoints));
         
-        // FIXED: Update mode display
-        _modeLabel.Text = Loc.GetString("research-visualizer-mode", ("mode", state.CurrentMode.ToString()));
+        if (_modeLabel != null)
+            _modeLabel.Text = Loc.GetString("research-visualizer-mode", ("mode", state.CurrentMode.ToString()));
         
-        _diskLabel.Text = state.InsertedDiskName != null 
-            ? Loc.GetString("research-visualizer-disk", ("name", state.InsertedDiskName))
-            : Loc.GetString("research-visualizer-no-disk");
+        if (_diskLabel != null)
+            _diskLabel.Text = state.InsertedDiskName != null 
+                ? Loc.GetString("research-visualizer-disk", ("name", state.InsertedDiskName))
+                : Loc.GetString("research-visualizer-no-disk");
         
         // Update eject button visibility
-        _ejectButton.Visible = state.InsertedDiskName != null;
+        if (_ejectButton != null)
+            _ejectButton.Visible = state.InsertedDiskName != null;
         
         // Update polar plot with current data
-        _polarPlot.UpdatePlot(state);
+        if (_polarPlot != null)
+            _polarPlot.UpdatePlot(state);
         
-        // FIXED: Using Labels instead of Buttons for technologies
-        UpdateTechnologiesDisplay(state.CollectedTechnologies);
+        // Update technologies display using Labels
+        if (_technologiesContainer != null)
+            UpdateTechnologiesDisplay(state.CollectedTechnologies);
     }
 
     private void UpdateTechnologiesDisplay(List<string> technologies)
     {
+        if (_technologiesContainer == null) return;
+        
         // Clear existing technology labels
         _technologiesContainer.RemoveAllChildren();
         
@@ -171,7 +177,7 @@ public sealed class ResearchAreaVisualizerWindow : SS14Window
             return;
         }
 
-        // Create a Label for each technology (FIXED: Replaced Buttons with Labels)
+        // Create a Label for each technology
         foreach (var tech in technologies)
         {
             var techLabel = new Label 
