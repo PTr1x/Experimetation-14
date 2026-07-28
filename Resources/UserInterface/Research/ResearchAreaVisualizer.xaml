@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="clr-namespace:Robust.Client.UserInterface.Controls;assembly=Robust.Client"
+    xmlns:custom="clr-namespace:Content.Client.Research.UI;assembly=Content.Client"
+    x:Class="Content.Client.Research.UI.ResearchAreaVisualizerWindow"
+    Title="Research Area Visualizer" 
+    Width="800" 
+    Height="600"
+    ResizeMode="CanResizeWithGrip">
+    
+    <Window.Resources>
+        <!-- Styles for the UI elements -->
+        <Style x:Key="HeaderLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+        </Style>
+        
+        <Style x:Key="InfoLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Margin" Value="0,0,16,0" />
+        </Style>
+        
+        <Style x:Key="TechLabel" TargetType="Label">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="4,2,4,2" />
+            <Setter Property="Background" Value="#FF2D2D30" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+            <Setter Property="Margin" Value="0,2,0,2" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+        
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="8,4,8,4" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="MinWidth" Value="100" />
+        </Style>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" /> <!-- Header -->
+            <RowDefinition Height="*" />    <!-- Polar Plot -->
+            <RowDefinition Height="Auto" /> <!-- Technologies Header -->
+            <RowDefinition Height="*" />    <!-- Technologies List -->
+        </Grid.RowDefinitions>
+        
+        <!-- Header Row -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Stretch" 
+                   VerticalAlignment="Center" Margin="8,8,8,4">
+            <Label Style="{StaticResource HeaderLabel}" 
+                   Content="{Loc research-visualizer-title}" />
+            
+            <Label Style="{StaticResource InfoLabel}" 
+                   Content="{Loc research-visualizer-points, points={Binding CurrentPoints}}" />
+            
+            <Label Style="{StaticResource InfoLabel}" 
+                   Content="{Loc research-visualizer-mode, mode={Binding CurrentMode}}" />
+            
+            <Label Style="{StaticResource InfoLabel}" 
+                   Content="{Loc research-visualizer-disk, name={Binding InsertedDiskName}}" 
+                   x:Name="DiskLabel" />
+            
+            <Button Style="{StaticResource ActionButton}" 
+                    Content="{Loc research-tooltip-eject-disk}" 
+                    Visibility="{Binding InsertedDiskName, Converter={StaticResource NullToVisibilityConverter}}"
+                    Click="OnEjectButtonPressed" 
+                    x:Name="EjectButton" />
+        </StackPanel>
+        
+        <!-- Polar Plot Area -->
+        <custom:PolarPlotControl Grid.Row="1" 
+                               x:Name="PolarPlot" 
+                               Margin="8,4,8,4" />
+        
+        <!-- Technologies Header -->
+        <Label Grid.Row="2" 
+               Style="{StaticResource HeaderLabel}" 
+               Content="{Loc research-collected-technologies}" 
+               Margin="8,8,8,4" />
+        
+        <!-- Technologies List with Scroll -->
+        <ScrollViewer Grid.Row="3" 
+                     HorizontalAlignment="Stretch" 
+                     VerticalAlignment="Stretch" 
+                     Margin="8,4,8,8">
+            <ItemsControl x:Name="TechnologiesContainer" 
+                         ItemsSource="{Binding CollectedTechnologies}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Label Style="{StaticResource TechLabel}" 
+                               Content="{Binding}" 
+                               ToolTip="{Binding, StringFormat={}{Loc research-technology-tooltip, tech={0}}}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</Window>
