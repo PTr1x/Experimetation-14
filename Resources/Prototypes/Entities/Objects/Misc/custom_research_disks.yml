@@ -1,0 +1,104 @@
+# Base abstract disk prototype
+- type: entity
+  id: BaseCustomResearchDataDisk
+  abstract: true
+  parent: BaseItem
+  components:
+    - type: Sprite
+      sprite: Objects/Misc/disk.rsi
+      state: disk
+    - type: Item
+      size: Tiny
+      shape:
+        !type:PhysShapeCircle
+        radius: 0.1
+    - type: ResearchDataDiskComponent
+      used: false
+    - type: Tag
+      tags:
+        - CustomResearchDisk
+        - ResearchDataDisk
+
+# Tier 1 Disk - Blue
+- type: entity
+  parent: BaseCustomResearchDataDisk
+  id: CustomResearchDataDiskTier1
+  name: tier 1 research data disk
+  description: A blue data disk containing basic research data. Worth 1000 research points.
+  components:
+    - type: Sprite
+      color: "#4a90d9"
+    - type: ResearchDataDiskComponent
+      points: 1000
+      tier: 1
+      discipline: "BasicResearch"
+
+# Tier 2 Disk - Green  
+- type: entity
+  parent: BaseCustomResearchDataDisk
+  id: CustomResearchDataDiskTier2
+  name: tier 2 research data disk
+  description: A green data disk containing advanced research data. Worth 5000 research points.
+  components:
+    - type: Sprite
+      color: "#50c878"
+    - type: ResearchDataDiskComponent
+      points: 5000
+      tier: 2
+      discipline: "AdvancedResearch"
+
+# Tier 3 Disk - Red
+- type: entity
+  parent: BaseCustomResearchDataDisk
+  id: CustomResearchDataDiskTier3
+  name: tier 3 research data disk  
+  description: A red data disk containing exotic research data. Worth 25000 research points.
+  components:
+    - type: Sprite
+      color: "#d95050"
+    - type: ResearchDataDiskComponent
+      points: 25000
+      tier: 3
+      discipline: "ExoticResearch"
+
+# Industrial Disk - Yellow (NFEngineering)
+- type: entity
+  parent: BaseCustomResearchDataDisk
+  id: CustomResearchDataDiskIndustrial
+  name: industrial research data disk
+  description: A yellow data disk containing engineering research data. Worth 7500 research points.
+  components:
+    - type: Sprite
+      color: "#ffd700"
+    - type: ResearchDataDiskComponent
+      points: 7500
+      tier: 2
+      discipline: "NFEngineering"
+
+# Arsenal Disk - Orange (NFEngineering)
+- type: entity
+  parent: BaseCustomResearchDataDisk
+  id: CustomResearchDataDiskArsenal
+  name: arsenal research data disk
+  description: An orange data disk containing weapons research data. Worth 10000 research points.
+  components:
+    - type: Sprite
+      color: "#ff8c00"
+    - type: ResearchDataDiskComponent
+      points: 10000
+      tier: 3
+      discipline: "NFEngineering"
+
+# Science Disk - Purple (NFScience)
+- type: entity
+  parent: BaseCustomResearchDataDisk
+  id: CustomResearchDataDiskScience
+  name: science research data disk
+  description: A purple data disk containing science research data. Worth 15000 research points.
+  components:
+    - type: Sprite
+      color: "#9370db"
+    - type: ResearchDataDiskComponent
+      points: 15000
+      tier: 3
+      discipline: "NFScience"
