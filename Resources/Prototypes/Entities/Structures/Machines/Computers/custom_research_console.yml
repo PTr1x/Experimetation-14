@@ -1,0 +1,38 @@
+- type: entity
+  parent: BaseComputer
+  id: CustomResearchConsole
+  name: custom research console
+  description: A customizable research console for advanced research operations.
+  components:
+    - type: Sprite
+      sprite: Structures/Machines/computer.rsi
+      layers:
+        - state: computerLayerBody
+        - state: computerLayerKeyboard
+          map: [ "computerLayerKeyboard" ]
+        - state: computerLayerScreen
+          map: [ "computerLayerScreenResearch" ]
+    - type: ResearchClient
+    - type: ResearchConsole
+    - type: TechnologyDatabase
+    - type: UserInterface
+      interfaces:
+        - key: enum.ResearchConsoleUiKey.Key
+          type: ResearchConsoleBoundUserInterface
+    - type: ApcPowerReceiver
+    - type: Transform
+    - type: Physics
+      bodyType: Static
+    - type: Fixtures
+      fixtures:
+        - shape:
+            !type:PhysShapeAabb
+            bounds: "-0.4,-0.2,0.4,0.4"
+          density: 100
+          mask:
+            - Machine
+          layer:
+            - Machine
+    - type: Anchorable
+    - type: Pullable
+    - type: InteractionOutline
