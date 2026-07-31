@@ -1,3 +1,4 @@
+using System.Linq; // FIXED: Added for LINQ methods
 using Robust.Shared.GameStates;
 using Robust.Shared.Serialization;
 
@@ -139,7 +140,7 @@ public sealed class ResearchAreaVisualizerBoundInterfaceState : BoundUserInterfa
 {
     public VisualizationMode CurrentMode;
     public long CurrentPoints;
-    public List<string> CollectedTechnologies; // FIXED: Convert HashSet to List for serialization
+    public List<string> CollectedTechnologies; // Convert HashSet to List for serialization
     public Dictionary<int, float> TierWeights;
     public string? InsertedDiskName;
 
@@ -152,7 +153,7 @@ public sealed class ResearchAreaVisualizerBoundInterfaceState : BoundUserInterfa
     {
         CurrentMode = mode;
         CurrentPoints = points;
-        // FIXED: Convert HashSet to List for serialization
+        // FIXED: Convert HashSet to List for serialization using LINQ
         CollectedTechnologies = collectedTechs.ToList();
         TierWeights = weights;
         InsertedDiskName = diskName;
