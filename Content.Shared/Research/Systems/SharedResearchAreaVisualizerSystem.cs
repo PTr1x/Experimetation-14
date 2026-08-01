@@ -1,47 +1,90 @@
-using System.Linq; // FIXED: Added for LINQ methods
+using System.Linq;
 using Content.Shared.Research.Components;
+using Robust.Shared.GameStates;
 using Robust.Shared.Random;
 
 namespace Content.Shared.Research.Systems;
 
-public abstract partial class SharedResearchAreaVisualizerSystem : EntitySystem
+public abstract class SharedResearchAreaVisualizerSystem : EntitySystem
 {
-    [Dependency] private readonly IRobustRandom _random = default!;
+    [Dependency] private readonly ISharedAdminLog _adminLog = default!;
+    [Dependency] protected readonly IRobustRandom _random = default!;
 
     /// <summary>
-    /// Get random technologies for a specific tier from the component's configurable list
+    /// Default constants for polar plot calculation.
+    /// </summary>
+    private const float DefaultRadius = 100f;
+    private const float Eccentricity = 0.2f;
+
+    /// <summary>
+    /// Try to get the visualizer and validate the player's access.
+    /// </summary>
+    protected bool TryGetVisualizerAndValidate(
+        VisualizerMessage message, 
+        EntitySessionEventArgs args, 
+        out EntityUid visualizerEntity, 
+        out ResearchAreaVisualizerComponent visualizer)
+    {
+        visualizerEntity = EntityUid.Invalid;
+        visualizer = null!;
+
+        var playerEntity = args.SenderSession.AttachedEntity;
+        if (playerEntity == null)
+        {
+            return false;
+        }
+
+        if (!TryGetEntity(message.VisualizerUid, out visualizerEntity) ||
+            !TryComp<ResearchAreaVisualizerComponent>(visualizerEntity, out visualizer))
+        {
+            return false;
+        }
+
+        if (!HasComp<IInteractionSystem>(playerEntity) ||
+            !HasComp<IInteractionSystem>(visualizerEntity))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Get random technologies for a given tier.
     /// </summary>
     protected List<string> GetRandomTechsForTier(ResearchAreaVisualizerComponent visualizer, int tier)
     {
-        // TODO: Replace with real technologies from ResearchSystem after API stabilization
-        
-        // First try to get technologies from the inserted disk
+        if (tier < 0)
+        {
+            _adminLog.Add(LogType.Error, LogImpact.Low, $"Invalid tier {tier} requested");
+            return GetPlaceholderTechnologies(0);
+        }
+
         if (visualizer.InsertedDisk != null && TryComp<ResearchDataDiskComponent>(visualizer.InsertedDisk.Value, out var disk))
         {
-            // FIXED: Filter out null or empty technologies using LINQ
-            var validTechs = disk.Technologies.Where(t => !string.IsNullOrEmpty(t)).ToList();
+            var validTechs = disk.Technologies?.Where(t => !string.IsNullOrEmpty(t)).ToList();
             
-            if (validTechs.Count > 0)
+            if (validTechs != null && validTechs.Count > 0)
             {
-                // FIXED: Use manual selection since PickRandom doesn't exist
-                return PickRandomElements(validTechs, Math.Min(3, validTechs.Count));
+                int count = Math.Min(3, validTechs.Count);
+                return PickRandomElements(validTechs, count);
             }
         }
 
-        // FIXED: Check if tier exists in TechnologiesByTier
-        if (visualizer.TechnologiesByTier.TryGetValue(tier, out var tierTechs) && tierTechs.Count > 0)
+        if (visualizer.TechnologiesByTier != null &&
+            visualizer.TechnologiesByTier.TryGetValue(tier, out var tierTechs) &&
+            tierTechs != null &&
+            tierTechs.Count > 0)
         {
             int count = Math.Min(3, tierTechs.Count);
-            // FIXED: Use manual selection since PickRandom doesn't exist
             return PickRandomElements(tierTechs, count);
         }
 
-        // Final fallback - use placeholder technologies
         return GetPlaceholderTechnologies(tier);
     }
 
     /// <summary>
-    /// Pick random elements from a list - manual implementation since PickRandom doesn't exist
+    /// Pick random elements from a list - manual implementation since PickRandom does not exist
     /// </summary>
     protected List<string> PickRandomElements(List<string> list, int count)
     {
@@ -60,17 +103,10 @@ public abstract partial class SharedResearchAreaVisualizerSystem : EntitySystem
 
     /// <summary>
     /// Get placeholder technologies - can be easily replaced later
-    /// TODO: Replace with real technologies from ResearchSystem after API stabilization
     /// </summary>
     protected List<string> GetPlaceholderTechnologies(int tier)
     {
-        return tier switch
-        {
-            1 => new List<string> { "BasicEngineering", "BasicScience", "BasicMedical" },
-            2 => new List<string> { "AdvancedEngineering", "AdvancedScience", "PowerGeneration" },
-            3 => new List<string> { "ExoticEngineering", "SingularityResearch", "Bluespace" },
-            _ => new List<string>()
-        };
+        return new List<string> { $"Tier {tier} Technology 1", $"Tier {tier} Technology 2" };
     }
 
     /// <summary>
@@ -78,7 +114,9 @@ public abstract partial class SharedResearchAreaVisualizerSystem : EntitySystem
     /// </summary>
     protected void AddTechnologies(IEnumerable<string> techs, ResearchAreaVisualizerComponent visualizer)
     {
-        // FIXED: Filter out null or empty technologies using LINQ
+        if (techs == null || visualizer.CollectedTechnologies == null)
+            return;
+
         var validTechs = techs.Where(t => !string.IsNullOrEmpty(t));
         
         foreach (var tech in validTechs)
@@ -88,27 +126,113 @@ public abstract partial class SharedResearchAreaVisualizerSystem : EntitySystem
     }
 
     /// <summary>
-    /// Calculate polar plot points using the formula: r(θ) = d₁[1 + 1.2e cos²(3/2 θ)]
+    /// Calculate polar plot points based on current points.
     /// </summary>
     protected Dictionary<float, float> CalculatePolarPlotPoints(long currentPoints)
     {
-        const float d1 = 100f;
-        const float e = 0.2f;
-        int pointCount = 36;
         var points = new Dictionary<float, float>();
+        int pointCount = 36;
 
         for (int i = 0; i < pointCount; i++)
         {
-            // FIXED: Explicit cast from double to float
             var theta = (float)(i * (2.0 * Math.PI / (float)pointCount));
-            var r = d1 * (1 + 1.2f * e * Math.Pow(Math.Cos(1.5f * theta), 2));
-            
-            // Scaling with long points
+            var r = DefaultRadius * (1 + 1.2f * Eccentricity * Math.Pow(Math.Cos(1.5f * theta), 2));
             var scaledR = r * (1 + currentPoints / 100000f);
-            
             points[(float)i] = scaledR;
         }
-
+        
         return points;
+    }
+
+    public override void Initialize()
+    {
+        base.Initialize();
+        SubscribeAllEvents();
+    }
+
+    protected virtual void SubscribeAllEvents() { }
+}
+
+/// <summary>
+/// Base message for visualizer actions.
+/// </summary>
+public abstract class VisualizerMessage : EntityEventArgs
+{
+    public NetEntity VisualizerUid { get; }
+
+    protected VisualizerMessage(NetEntity visualizerUid)
+    {
+        VisualizerUid = visualizerUid;
+    }
+}
+
+/// <summary>
+/// Message for changing visualization mode.
+/// </summary>
+public sealed class VisualizerModeChangeMessage : VisualizerMessage
+{
+    public VisualizationMode NewMode { get; }
+
+    public VisualizerModeChangeMessage(VisualizationMode newMode, NetEntity visualizerUid) 
+        : base(visualizerUid)
+    {
+        NewMode = newMode;
+    }
+}
+
+/// <summary>
+/// Message for inserting a disk.
+/// </summary>
+public sealed class VisualizerDiskInsertMessage : VisualizerMessage
+{
+    public EntityUid DiskUid { get; }
+
+    public VisualizerDiskInsertMessage(EntityUid diskUid, NetEntity visualizerUid) 
+        : base(visualizerUid)
+    {
+        DiskUid = diskUid;
+    }
+}
+
+/// <summary>
+/// Message for ejecting a disk.
+/// </summary>
+public sealed class VisualizerDiskEjectMessage : VisualizerMessage
+{
+    public VisualizerDiskEjectMessage(NetEntity visualizerUid) : base(visualizerUid) { }
+}
+
+/// <summary>
+/// UI key for the research area visualizer.
+/// </summary>
+public static class ResearchAreaVisualizerUiKey
+{
+    public static readonly string Key = "ResearchAreaVisualizer";
+}
+
+/// <summary>
+/// Bound user interface state for the research area visualizer.
+/// </summary>
+[Serializable, NetSerializable]
+public sealed partial class ResearchAreaVisualizerBoundInterfaceState : BoundUserInterfaceState
+{
+    public VisualizationMode CurrentMode;
+    public long CurrentPoints;
+    public List<string> CollectedTechnologies;
+    public Dictionary<int, float> TierWeights;
+    public string? InsertedDiskName;
+
+    public ResearchAreaVisualizerBoundInterfaceState(
+        VisualizationMode mode,
+        long points,
+        HashSet<string> collectedTechs,
+        Dictionary<int, float> weights,
+        string? diskName)
+    {
+        CurrentMode = mode;
+        CurrentPoints = points;
+        CollectedTechnologies = collectedTechs?.ToList() ?? new List<string>();
+        TierWeights = weights ?? new Dictionary<int, float>();
+        InsertedDiskName = diskName;
     }
 }
