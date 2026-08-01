@@ -90,42 +90,35 @@ public sealed class ResearchAreaVisualizerWindow : SS14Window
     {
         _interface = interface;
         
-        // Set up window properties using Loc.GetString
-        Title = Loc.GetString("research-visualizer-title");
+        Title = Loc.GetString("research-visualizer-title", "Research Visualizer");
         Width = 800;
         Height = 600;
         
-        // Create main container
         var mainContainer = new VBoxContainer { SeparationOverride = 8 };
         AddChild(mainContainer);
         
-        // Header with points, mode and disk info
         var header = new HBoxContainer { SeparationOverride = 16 };
         mainContainer.AddChild(header);
         
-        // FIXED: Using x:Name equivalent with direct property access
         _pointsLabel = new Label { Text = Loc.GetString("research-visualizer-points", ("points", 0)) };
         header.AddChild(_pointsLabel);
         
         _modeLabel = new Label { Text = Loc.GetString("research-visualizer-mode", ("mode", "PolarPlot")) };
         header.AddChild(_modeLabel);
         
-        _diskLabel = new Label { Text = Loc.GetString("research-visualizer-no-disk") };
+        _diskLabel = new Label { Text = Loc.GetString("research-visualizer-no-disk", "No disk inserted") };
         header.AddChild(_diskLabel);
         
-        // Disk eject button
-        _ejectButton = new Button { Text = Loc.GetString("research-tooltip-eject-disk") };
+        _ejectButton = new Button { Text = Loc.GetString("research-tooltip-eject-disk", "Eject Disk") };
         _ejectButton.OnPressed += OnEjectButtonPressed;
         header.AddChild(_ejectButton);
         
-        // Polar plot visualization
         _polarPlot = new PolarPlotControl();
         mainContainer.AddChild(_polarPlot);
         _polarPlot.Expand = true;
         _polarPlot.FillExpand = true;
         
-        // Technologies container - FIXED: Using Labels instead of Buttons
-        var technologiesHeader = new Label { Text = Loc.GetString("research-collected-technologies") };
+        var technologiesHeader = new Label { Text = Loc.GetString("research-collected-technologies", "Collected Technologies") };
         mainContainer.AddChild(technologiesHeader);
         
         var scrollContainer = new ScrollContainer { VerticalExpand = true };
@@ -142,36 +135,28 @@ public sealed class ResearchAreaVisualizerWindow : SS14Window
 
     public void UpdateState(ResearchAreaVisualizerBoundInterfaceState state)
     {
-        // FIXED: Direct property updates instead of bindings
         _pointsLabel.Text = Loc.GetString("research-visualizer-points", ("points", state.CurrentPoints));
         _modeLabel.Text = Loc.GetString("research-visualizer-mode", ("mode", state.CurrentMode.ToString()));
         _diskLabel.Text = state.InsertedDiskName != null 
             ? Loc.GetString("research-visualizer-disk", ("name", state.InsertedDiskName))
-            : Loc.GetString("research-visualizer-no-disk");
+            : Loc.GetString("research-visualizer-no-disk", "No disk inserted");
         
-        // Update eject button visibility
         _ejectButton.Visible = state.InsertedDiskName != null;
-        
-        // Update polar plot with current data
         _polarPlot.UpdatePlot(state);
-        
-        // Update technologies display using Labels (FIXED: No bindings, no commands)
         UpdateTechnologiesDisplay(state.CollectedTechnologies);
     }
 
     private void UpdateTechnologiesDisplay(List<string> technologies)
     {
-        // Clear existing technology labels
         _technologiesContainer.RemoveAllChildren();
         
-        if (technologies.Count == 0)
+        if (technologies == null || technologies.Count == 0)
         {
-            var noTechsLabel = new Label { Text = Loc.GetString("research-no-technologies") };
+            var noTechsLabel = new Label { Text = Loc.GetString("research-no-technologies", "No technologies collected") };
             _technologiesContainer.AddChild(noTechsLabel);
             return;
         }
 
-        // Create a Label for each technology (FIXED: No buttons, no commands)
         foreach (var tech in technologies)
         {
             var techLabel = new Label 
@@ -181,9 +166,7 @@ public sealed class ResearchAreaVisualizerWindow : SS14Window
                 HorizontalExpand = true
             };
             
-            // Style the technology labels
             techLabel.AddStyleClass("TechLabel");
-            
             _technologiesContainer.AddChild(techLabel);
         }
     }
@@ -203,7 +186,6 @@ public sealed class PolarPlotControl : Control
 
     public void UpdatePlot(ResearchAreaVisualizerBoundInterfaceState state)
     {
-        // Calculate polar plot points based on the formula: r(θ) = d₁[1 + 1.2e cos²(3/2 θ)]
         _points.Clear();
         
         const float d1 = 100f;
@@ -214,10 +196,7 @@ public sealed class PolarPlotControl : Control
         {
             var theta = (float)(i * (2 * Math.PI / pointCount));
             var r = d1 * (1 + 1.2f * e * Math.Pow(Math.Cos(1.5f * theta), 2));
-            
-            // Scaling with long points
             var scaledR = r * (1 + state.CurrentPoints / 100000f);
-            
             _points[(float)i] = scaledR;
         }
         
@@ -231,23 +210,18 @@ public sealed class PolarPlotControl : Control
         var center = new Vector2(Width / 2f, Height / 2f);
         var maxRadius = Math.Min(Width, Height) / 2f - 10;
         
-        // Draw background
         handle.DrawRect(Rect.FromDimensions(0, 0, Width, Height), Color.Black);
         
-        // Draw polar plot points
         for (int i = 0; i < _points.Count; i++)
         {
             var angle = (float)(i * (2 * Math.PI / _points.Count));
             var radius = _points[(float)i] / 100f * maxRadius;
-            
             var x = center.X + radius * (float)Math.Cos(angle);
             var y = center.Y + radius * (float)Math.Sin(angle);
-            
             var point = new Vector2(x, y);
             handle.DrawCircle(point, 3, Color.Cyan);
         }
         
-        // Draw connections between points
         for (int i = 0; i < _points.Count; i++)
         {
             var angle1 = (float)(i * (2 * Math.PI / _points.Count));

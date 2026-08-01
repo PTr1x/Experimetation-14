@@ -11,8 +11,8 @@ public sealed partial class ResearchAreaVisualizerSystem : SharedResearchAreaVis
     [Dependency] private readonly IEntityManager _entityManager = default!;
     [Dependency] private readonly SharedPopupSystem _popup = default!;
     [Dependency] private readonly IInteractionSystem _interactionSystem = default!;
-    [Dependency] private readonly BoundUserInterfaceSystem _uiSystem = default!; // FIXED: Cache dependency
-    [Dependency] private readonly ITransformSystem _transform = default!; // FIXED: For proper coordinate setting
+    [Dependency] private readonly BoundUserInterfaceSystem _uiSystem = default!;
+    [Dependency] private readonly ITransformSystem _transform = default!;
 
     public override void Initialize()
     {
@@ -25,81 +25,54 @@ public sealed partial class ResearchAreaVisualizerSystem : SharedResearchAreaVis
 
     private void OnModeChangeMessage(VisualizerModeChangeMessage message, EntitySessionEventArgs args)
     {
-        // FIXED: Check if player entity is not null
-        var playerEntity = args.SenderSession.AttachedEntity;
-        if (playerEntity == null)
+        if (!TryGetVisualizerAndValidate(message, args, out var visualizerEntity, out var visualizer))
             return;
 
-        // Get visualizer by UID from message
-        if (!_netManager.TryGetEntity(message.VisualizerUid, out var visualizerEntity) ||
-            !TryComp<ResearchAreaVisualizerComponent>(visualizerEntity, out var visualizer))
+        if (!_interactionSystem.InRange(visualizerEntity, args.SenderSession.AttachedEntity))
         {
-            _popup.PopupEntity(Loc.GetString("research-error-no-visualizer"), visualizerEntity, playerEntity);
-            return;
-        }
-
-        // Check if player is near the visualizer
-        if (!_interactionSystem.InRange(visualizerEntity, playerEntity))
-        {
-            _popup.PopupEntity(Loc.GetString("research-error-too-far"), visualizerEntity, playerEntity);
+            _popup.PopupEntity(Loc.GetString("research-error-too-far", "You are too far away"), visualizerEntity, args.SenderSession.AttachedEntity);
             return;
         }
 
         visualizer.Mode = message.NewMode;
         Dirty(visualizerEntity, visualizer);
-        
         UpdateUserInterface(visualizerEntity, visualizer);
     }
 
     private void OnDiskInsertMessage(VisualizerDiskInsertMessage message, EntitySessionEventArgs args)
     {
-        // FIXED: Check if player entity is not null
-        var playerEntity = args.SenderSession.AttachedEntity;
-        if (playerEntity == null)
+        if (!TryGetVisualizerAndValidate(message, args, out var visualizerEntity, out var visualizer))
             return;
 
-        // Get visualizer by UID from message
-        if (!_netManager.TryGetEntity(message.VisualizerUid, out var visualizerEntity) ||
-            !TryComp<ResearchAreaVisualizerComponent>(visualizerEntity, out var visualizer))
+        if (!_interactionSystem.InRange(visualizerEntity, args.SenderSession.AttachedEntity))
         {
-            _popup.PopupEntity(Loc.GetString("research-error-no-visualizer"), visualizerEntity, playerEntity);
+            _popup.PopupEntity(Loc.GetString("research-error-too-far", "You are too far away"), visualizerEntity, args.SenderSession.AttachedEntity);
             return;
         }
 
-        // Check if player is near the visualizer
-        if (!_interactionSystem.InRange(visualizerEntity, playerEntity))
-        {
-            _popup.PopupEntity(Loc.GetString("research-error-too-far"), visualizerEntity, playerEntity);
-            return;
-        }
-
-        // Get the disk entity
         if (!TryGetEntity(message.DiskUid, out var diskEntity) ||
             !TryComp<ResearchDataDiskComponent>(diskEntity, out var disk))
         {
-            _popup.PopupEntity(Loc.GetString("research-disk-invalid"), visualizerEntity, playerEntity);
+            _popup.PopupEntity(Loc.GetString("research-disk-invalid", "Invalid disk"), visualizerEntity, args.SenderSession.AttachedEntity);
             return;
         }
 
-        // Validate disk is not already used
         if (disk.Used)
         {
-            _popup.PopupEntity(Loc.GetString("research-disk-already-used"), diskEntity, playerEntity);
+            _popup.PopupEntity(Loc.GetString("research-disk-already-used", "Disk already used"), diskEntity, args.SenderSession.AttachedEntity);
             return;
         }
 
-        // Check for point overflow with safe check
         if (visualizer.Points + disk.Points > visualizer.MaxPoints)
         {
             visualizer.Points = visualizer.MaxPoints;
-            _popup.PopupEntity(Loc.GetString("research-points-max-reached"), diskEntity, playerEntity);
+            _popup.PopupEntity(Loc.GetString("research-points-max-reached", "Maximum points reached"), diskEntity, args.SenderSession.AttachedEntity);
         }
         else
         {
             visualizer.Points += disk.Points;
         }
 
-        // Eject any existing disk first
         if (visualizer.InsertedDisk != null)
         {
             EjectDisk(visualizerEntity, visualizer);
@@ -108,50 +81,33 @@ public sealed partial class ResearchAreaVisualizerSystem : SharedResearchAreaVis
         visualizer.InsertedDisk = diskEntity;
         disk.Used = true;
         Dirty(diskEntity, disk);
-        
-        // FIXED: Use AddTechnologies method to reduce duplication
         AddTechnologies(disk.Technologies, visualizer);
 
-        // If disk has no technologies, get some from tier
-        if (disk.Technologies.Count == 0)
+        if (disk.Technologies == null || disk.Technologies.Count == 0)
         {
             var techsForTier = GetRandomTechsForTier(visualizer, disk.Tier);
             AddTechnologies(techsForTier, visualizer);
         }
 
-        _popup.PopupEntity(Loc.GetString("research-disk-inserted", ("points", disk.Points)), diskEntity, playerEntity);
+        _popup.PopupEntity(Loc.GetString("research-disk-inserted", ("points", disk.Points.ToString())), diskEntity, args.SenderSession.AttachedEntity);
         Dirty(visualizerEntity, visualizer);
-        
         UpdateUserInterface(visualizerEntity, visualizer);
     }
 
     private void OnDiskEjectMessage(VisualizerDiskEjectMessage message, EntitySessionEventArgs args)
     {
-        // FIXED: Check if player entity is not null
-        var playerEntity = args.SenderSession.AttachedEntity;
-        if (playerEntity == null)
+        if (!TryGetVisualizerAndValidate(message, args, out var visualizerEntity, out var visualizer))
             return;
 
-        // Get visualizer by UID from message
-        if (!_netManager.TryGetEntity(message.VisualizerUid, out var visualizerEntity) ||
-            !TryComp<ResearchAreaVisualizerComponent>(visualizerEntity, out var visualizer))
+        if (!_interactionSystem.InRange(visualizerEntity, args.SenderSession.AttachedEntity))
         {
-            _popup.PopupEntity(Loc.GetString("research-error-no-visualizer"), visualizerEntity, playerEntity);
-            return;
-        }
-
-        // Check if player is near the visualizer
-        if (!_interactionSystem.InRange(visualizerEntity, playerEntity))
-        {
-            _popup.PopupEntity(Loc.GetString("research-error-too-far"), visualizerEntity, playerEntity);
+            _popup.PopupEntity(Loc.GetString("research-error-too-far", "You are too far away"), visualizerEntity, args.SenderSession.AttachedEntity);
             return;
         }
 
         EjectDisk(visualizerEntity, visualizer);
-        
-        _popup.PopupEntity(Loc.GetString("research-disk-ejected"), visualizerEntity, playerEntity);
+        _popup.PopupEntity(Loc.GetString("research-disk-ejected", "Disk ejected"), visualizerEntity, args.SenderSession.AttachedEntity);
         Dirty(visualizerEntity, visualizer);
-        
         UpdateUserInterface(visualizerEntity, visualizer);
     }
 
@@ -170,52 +126,45 @@ public sealed partial class ResearchAreaVisualizerSystem : SharedResearchAreaVis
             Dirty(diskEntity, disk);
         }
 
-        // FIXED: Check if entity has TransformComponent and use _transform.SetCoordinates
         if (TryComp<TransformComponent>(diskEntity, out var xform))
         {
             var targetPos = Transform(visualizerEntity).Coordinates;
-            _transform.SetCoordinates(diskEntity, targetPos); // FIXED: Proper grid/snap handling
+            _transform.SetCoordinates(diskEntity, targetPos);
         }
 
         visualizer.InsertedDisk = null;
     }
 
-    /// <summary>
-    /// Update the bound user interface
-    /// FIXED: Using cached _uiSystem and checking if UI is open
-    /// </summary>
-    public void UpdateUserInterface(EntityUid uid, ResearchAreaVisualizerComponent? component = null)
+    private void UpdateUserInterface(EntityUid visualizerEntity, ResearchAreaVisualizerComponent visualizer)
     {
-        if (!Resolve(uid, ref component))
+        if (!_uiSystem.IsOpen(visualizerEntity, ResearchAreaVisualizerUiKey.Key))
             return;
-
-        // FIXED: Check if UI is open before sending state
-        if (!_uiSystem.IsOpen(uid, ResearchAreaVisualizerUiKey.Key))
-            return;
-
-        // FIXED: Use MetaData for safe entity name resolution
-        string? diskName = null;
-        if (component.InsertedDisk != null)
-        {
-            if (TryComp<MetaDataComponent>(component.InsertedDisk.Value, out var meta))
-            {
-                diskName = meta.EntityName;
-            }
-            // Fallback to ToPrettyString if MetaData not available
-            else if (_entityManager.EntityExists(component.InsertedDisk.Value))
-            {
-                diskName = _entityManager.ToPrettyString(component.InsertedDisk.Value);
-            }
-        }
 
         var state = new ResearchAreaVisualizerBoundInterfaceState(
-            component.Mode,
-            component.Points,
-            component.CollectedTechnologies,
-            component.TierWeights,
-            diskName
+            visualizer.Mode,
+            visualizer.Points,
+            visualizer.CollectedTechnologies,
+            visualizer.TierWeights,
+            GetDiskName(visualizer.InsertedDisk)
         );
+        _uiSystem.SendState(visualizerEntity, ResearchAreaVisualizerUiKey.Key, state);
+    }
 
-        _uiSystem.SendState(uid, ResearchAreaVisualizerUiKey.Key, state);
+    private string? GetDiskName(EntityUid? diskUid)
+    {
+        if (diskUid == null)
+            return null;
+
+        if (TryComp<MetaDataComponent>(diskUid.Value, out var meta))
+        {
+            return meta.EntityName;
+        }
+        
+        if (_entityManager.EntityExists(diskUid.Value))
+        {
+            return _entityManager.ToPrettyString(diskUid.Value);
+        }
+        
+        return null;
     }
 }
