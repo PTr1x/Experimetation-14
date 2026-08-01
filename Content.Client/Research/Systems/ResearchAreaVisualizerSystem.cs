@@ -20,7 +20,6 @@ public sealed partial class ResearchAreaVisualizerSystem : SharedResearchAreaVis
         if (args.UiKey != ResearchAreaVisualizerUiKey.Key)
             return;
             
-        // Initialize the UI - removed redundant null checks as values are initialized by constructor
         if (args.Interface is ResearchAreaVisualizerBoundUserInterface ui)
         {
             ui.UpdateState(new ResearchAreaVisualizerBoundInterfaceState(
@@ -33,9 +32,6 @@ public sealed partial class ResearchAreaVisualizerSystem : SharedResearchAreaVis
         }
     }
 
-    /// <summary>
-    /// Get disk name safely using MetaData
-    /// </summary>
     private string? GetDiskName(EntityUid? diskUid)
     {
         if (diskUid == null)
